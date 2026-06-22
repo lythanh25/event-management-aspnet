@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quản lý Người dùng — EventHub Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   RESET & ROOT
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #F1ECE3;
+  --bg-deep:      #E5DDD0;
+  --ink:          #1A1410;
+  --ink-soft:     #4A3F36;
+  --muted:        #8A7E72;
+  --line:         #E5DCCD;
+  --line-strong:  #D8CDB9;
+  --card:         #FFFFFF;
+  --sidebar:      #15110D;
+  --amber:        #E89B3C;
+  --amber-soft:   #F5B96A;
+  --amber-bg:     #FBF4E7;
+  --green:        #2F8F5E;
+  --green-soft:   #E8F2EC;
+  --red:          #C84B3B;
+  --red-soft:     #FBECE9;
+  --blue:         #5B7CC4;
+  --blue-soft:    #E2E8F4;
+  --purple:       #8E7FBE;
+  --purple-soft:  #ECE7F5;
+  --teal:         #2A8A8A;
+  --teal-soft:    #E0F2F2;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+button { font: inherit; cursor: pointer; }
+a { color: inherit; text-decoration: none; cursor: pointer; }
+
+/* ═══════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════ */
+.app {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+.sidebar {
+  background: var(--sidebar);
+  color: #C9BFB1;
+  padding: 22px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 4px 8px 22px;
+  border-bottom: 1px solid #2A241D;
+  margin-bottom: 16px;
+}
+.brand-mark {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(145deg, var(--amber-soft), var(--amber));
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(232,155,60,0.25);
+}
+.brand-mark svg { width: 17px; height: 17px; stroke: #1A1410; }
+.brand-name { color: #fff; font-weight: 600; font-size: 14.5px; line-height: 1.2; letter-spacing: -0.005em; }
+.brand-sub  { color: #6B5F52; font-size: 11px; margin-top: 1px; }
+
+.nav-group-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #5A5046;
+  padding: 12px 10px 6px;
+  font-weight: 500;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  color: #B5AB9D;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.nav-item svg { width: 17px; height: 17px; stroke: currentColor; opacity: 0.85; flex-shrink: 0; }
+.nav-item:hover { background: #1F1A14; color: #fff; }
+.nav-item.active {
+  background: linear-gradient(180deg, rgba(232,155,60,0.18), rgba(232,155,60,0.10));
+  color: #F4D9A8;
+  box-shadow: inset 0 0 0 1px rgba(232,155,60,0.15);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -14px; top: 8px; bottom: 8px;
+  width: 3px;
+  background: var(--amber);
+  border-radius: 0 3px 3px 0;
+}
+.nav-badge {
+  margin-left: auto;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  line-height: 1.4;
+}
+.nav-spacer { flex: 1; min-height: 20px; }
+.logout {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px;
+  border-top: 1px solid #2A241D;
+  color: #8A7E70;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.logout:hover { color: #fff; }
+.logout svg { width: 16px; height: 16px; stroke: currentColor; }
+
+/* ═══════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════ */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* TOPBAR */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.breadcrumb a:hover { color: var(--ink); }
+.breadcrumb .sep { opacity: 0.4; }
+.breadcrumb .current { color: var(--ink); font-weight: 500; }
+.topbar-right {
+  display: flex; align-items: center; gap: 10px;
+  margin-left: auto;
+}
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 7px 12px;
+  width: 280px;
+  color: var(--muted);
+}
+.search-box svg { width: 14px; height: 14px; stroke: currentColor; flex-shrink: 0; }
+.search-box input {
+  flex: 1; border: 0; outline: 0; background: transparent;
+  font: inherit; font-size: 13px; color: var(--ink);
+}
+.search-box input::placeholder { color: var(--muted); }
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  display: grid; place-items: center;
+  color: var(--ink-soft);
+  position: relative;
+}
+.icon-btn:hover { border-color: var(--line-strong); }
+.icon-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+.icon-btn .dot {
+  position: absolute; top: 8px; right: 8px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 2px var(--card);
+}
+.topbar-avatar {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #4A3F36, var(--ink));
+  display: grid; place-items: center;
+  color: #F5EFE6;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════
+   PAGE
+═══════════════════════════════════════ */
+.page {
+  padding: 26px 32px 48px;
+  width: 100%;
+}
+
+/* PAGE HEADER */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+}
+.page-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--amber);
+  margin-left: 4px;
+}
+.page-sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+.page-sub b { color: var(--ink-soft); font-weight: 600; }
+
+.head-btns {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink-soft);
+  transition: all 0.15s ease;
+}
+.btn:hover { border-color: var(--line-strong); background: #FDFAF5; }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; }
+.btn-primary {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.btn-primary:hover { background: #2A241D; border-color: #2A241D; color: #fff; }
+
+/* ═══════════════════════════════════════
+   STAT TABS
+═══════════════════════════════════════ */
+.stat-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-tab {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+.stat-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 18px; right: 18px;
+  height: 2px;
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.18s ease;
+}
+.stat-tab:hover { border-color: var(--line-strong); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+.stat-tab.active {
+  background: linear-gradient(145deg, #FBF4E7 0%, #F5E5C7 100%);
+  border-color: #E8D4A8;
+  box-shadow: 0 4px 16px rgba(232,155,60,0.12);
+}
+.stat-tab.active::after { background: var(--amber); }
+
+.stat-tab-icon {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+.stat-tab-icon svg { width: 17px; height: 17px; stroke: currentColor; }
+.stat-tab-icon.all    { background: var(--amber-bg); color: #B36F12; }
+.stat-tab-icon.active-i { background: var(--green-soft); color: var(--green); }
+.stat-tab-icon.new    { background: var(--blue-soft); color: var(--blue); }
+.stat-tab-icon.locked { background: var(--red-soft); color: var(--red); }
+.stat-tab-icon.admin  { background: var(--purple-soft); color: var(--purple); }
+
+.stat-tab-num {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+.stat-tab-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.stat-tab.active .stat-tab-label { color: #8C5A1F; }
+.stat-tab-delta {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--green);
+  margin-top: 3px;
+  display: inline-flex; align-items: center; gap: 2px;
+}
+.stat-tab-delta svg { width: 10px; height: 10px; stroke: currentColor; }
+.stat-tab-delta.down { color: var(--red); }
+
+/* ═══════════════════════════════════════
+   PANEL
+═══════════════════════════════════════ */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* FILTER BAR */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #FDFAF5;
+  flex-wrap: wrap;
+}
+.filter-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 7px 12px;
+  width: 280px;
+  color: var(--muted);
+}
+.filter-search svg { width: 14px; height: 14px; stroke: currentColor; flex-shrink: 0; }
+.filter-search input {
+  flex: 1; border: 0; outline: 0; background: transparent;
+  font: inherit; font-size: 13px; color: var(--ink);
+}
+.filter-search input::placeholder { color: var(--muted); }
+
+.filter-select {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 11px 7px 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  white-space: nowrap;
+}
+.filter-select:hover { border-color: var(--line-strong); }
+.filter-select svg { width: 11px; height: 11px; stroke: currentColor; opacity: 0.45; }
+.filter-select b { color: var(--ink); font-weight: 500; margin-left: 1px; }
+
+.filter-divider {
+  width: 1px; height: 20px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+
+.bulk-actions {
+  display: flex; align-items: center; gap: 8px;
+  margin-left: auto;
+}
+.bulk-count {
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.bulk-count b { color: var(--ink); font-weight: 600; }
+
+.btn-sm {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink-soft);
+  transition: all 0.15s ease;
+}
+.btn-sm:hover { border-color: var(--line-strong); }
+.btn-sm svg { width: 12px; height: 12px; stroke: currentColor; }
+.btn-sm.danger { color: var(--red); }
+.btn-sm.danger:hover { border-color: var(--red); background: var(--red-soft); }
+.btn-sm.success { color: var(--green); }
+.btn-sm.success:hover { border-color: var(--green); background: var(--green-soft); }
+
+/* ═══════════════════════════════════════
+   TABLE
+═══════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 1080px;
+}
+.tbl thead th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--muted);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: #FDFAF5;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  user-select: none;
+}
+.tbl thead th.sortable { cursor: pointer; }
+.tbl thead th.sortable:hover { color: var(--ink); }
+.tbl thead th .th-inner {
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.tbl thead th svg { width: 11px; height: 11px; stroke: currentColor; opacity: 0.4; }
+.tbl thead th.sorted svg { opacity: 1; color: var(--amber); }
+
+.tbl tbody td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  background: var(--card);
+  transition: background 0.1s ease;
+}
+.tbl tbody tr:hover td { background: #FDFAF5; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl tbody tr.selected td { background: #FBF4E7; }
+
+/* checkbox */
+.cbx {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.cbx svg { width: 10px; height: 10px; stroke: #fff; display: none; stroke-width: 3; }
+.cbx.checked { background: var(--ink); border-color: var(--ink); }
+.cbx.checked svg { display: block; }
+.cbx.indeterminate { background: var(--ink); border-color: var(--ink); }
+.cbx.indeterminate::after {
+  content: '';
+  width: 8px; height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+/* USER CELL */
+.user-cell {
+  display: flex; align-items: center; gap: 12px;
+  min-width: 240px;
+}
+.avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+  position: relative;
+}
+.avatar.av-amber  { background: linear-gradient(135deg, #F5B96A, #C87820); }
+.avatar.av-green  { background: linear-gradient(135deg, #4AB87A, #1F6E45); }
+.avatar.av-blue   { background: linear-gradient(135deg, #7FA0E0, #3A5BAA); }
+.avatar.av-purple { background: linear-gradient(135deg, #B0A0DE, #6B4FA0); }
+.avatar.av-teal   { background: linear-gradient(135deg, #4AB8B8, #1A6666); }
+.avatar.av-red    { background: linear-gradient(135deg, #E87070, #A03030); }
+.avatar.av-slate  { background: linear-gradient(135deg, #8090A8, #3A4A60); }
+.avatar.av-rose   { background: linear-gradient(135deg, #E8809A, #A03050); }
+
+.avatar .status-dot {
+  position: absolute;
+  bottom: 1px; right: 1px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+}
+.status-dot.online  { background: var(--green); }
+.status-dot.offline { background: var(--line-strong); }
+.status-dot.locked  { background: var(--red); }
+
+.user-name {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.user-id {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* EMAIL */
+.email-cell {
+  color: var(--ink-soft);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* DEPT CELL */
+.dept-cell {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.dept-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dept-dot.d1 { background: #5B7CC4; }
+.dept-dot.d2 { background: #2F8F5E; }
+.dept-dot.d3 { background: #E89B3C; }
+.dept-dot.d4 { background: #8E7FBE; }
+.dept-dot.d5 { background: #C84B3B; }
+.dept-dot.d6 { background: #2A8A8A; }
+.dept-dot.d7 { background: #8A7E72; }
+
+/* ROLE BADGE */
+.role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.role-badge.admin   { background: var(--purple-soft); color: var(--purple); }
+.role-badge.manager { background: var(--amber-bg);    color: #B36F12; }
+.role-badge.user    { background: var(--bg-deep);      color: var(--ink-soft); }
+.role-badge.organizer { background: var(--teal-soft); color: var(--teal); }
+
+/* STATUS PILL */
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.status-pill::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.status-pill.active  { background: var(--green-soft); color: var(--green); }
+.status-pill.active::before  { background: var(--green); }
+.status-pill.locked  { background: var(--red-soft);   color: var(--red); }
+.status-pill.locked::before  { background: var(--red); }
+.status-pill.inactive { background: #EFEAE0; color: var(--ink-soft); }
+.status-pill.inactive::before { background: var(--muted); }
+.status-pill.pending { background: var(--blue-soft);  color: var(--blue); }
+.status-pill.pending::before { background: var(--blue); }
+
+/* EVENTS COUNT */
+.events-count {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.events-count small { color: var(--muted); font-weight: 400; font-size: 11.5px; }
+
+/* LAST LOGIN */
+.login-cell {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.login-cell small { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
+
+/* ROW ACTIONS */
+.row-actions {
+  display: inline-flex; align-items: center; gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.tbl tbody tr:hover .row-actions { opacity: 1; }
+.row-btn {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: grid; place-items: center;
+  transition: all 0.12s ease;
+}
+.row-btn:hover { background: var(--bg-deep); color: var(--ink); }
+.row-btn.danger:hover { background: var(--red-soft); color: var(--red); }
+.row-btn.success:hover { background: var(--green-soft); color: var(--green); }
+.row-btn svg { width: 14px; height: 14px; stroke: currentColor; }
+
+/* ═══════════════════════════════════════
+   PAGINATION
+═══════════════════════════════════════ */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+  background: #FDFAF5;
+  font-size: 12.5px;
+  color: var(--muted);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pag-info b { color: var(--ink); font-weight: 600; }
+.pag-controls {
+  display: flex; align-items: center; gap: 4px;
+}
+.pag-btn {
+  min-width: 30px; height: 30px;
+  padding: 0 8px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink-soft);
+  display: inline-flex; align-items: center; justify-content: center;
+  font: inherit; font-size: 12.5px;
+  transition: all 0.12s ease;
+}
+.pag-btn:hover { border-color: var(--line-strong); }
+.pag-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.pag-btn svg { width: 13px; height: 13px; stroke: currentColor; }
+.pag-size {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 12.5px;
+  color: var(--ink);
+  font-weight: 500;
+  cursor: pointer;
+}
+.pag-size svg { width: 10px; height: 10px; stroke: currentColor; opacity: 0.4; }
+
+/* ═══════════════════════════════════════
+   USER DETAIL DRAWER
+═══════════════════════════════════════ */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,12,8,0.4);
+  z-index: 200;
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 480px;
+  background: var(--bg);
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.12);
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+  flex-shrink: 0;
+}
+.drawer-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.drawer-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  display: grid; place-items: center;
+  color: var(--muted);
+  transition: all 0.15s ease;
+}
+.drawer-close:hover { border-color: var(--line-strong); color: var(--ink); }
+.drawer-close svg { width: 15px; height: 15px; stroke: currentColor; }
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* DRAWER: Profile hero */
+.d-profile {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+}
+.d-avatar-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+.d-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #B0A0DE, #6B4FA0);
+  display: grid; place-items: center;
+  font-size: 28px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 auto;
+}
+.d-status-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2.5px solid var(--green);
+}
+.d-status-ring.locked { border-color: var(--red); }
+.d-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+.d-email {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.d-badges {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.d-quick-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.d-quick-stat {
+  background: var(--bg);
+  padding: 12px 8px;
+  text-align: center;
+}
+.d-quick-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.d-quick-label {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+/* DRAWER: Info section */
+.d-section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.d-section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #FDFAF5;
+}
+.d-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  display: flex; align-items: center; gap: 7px;
+}
+.d-section-title svg { width: 13px; height: 13px; stroke: var(--amber); }
+.d-edit-link {
+  font-size: 12px;
+  color: var(--blue);
+  font-weight: 500;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.d-edit-link:hover { color: #3A5BAA; }
+.d-edit-link svg { width: 11px; height: 11px; stroke: currentColor; }
+
+.d-info-list {
+  padding: 4px 0;
+}
+.d-info-row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 10px 18px;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.d-info-row:last-child { border-bottom: 0; }
+.d-info-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  flex-shrink: 0;
+  padding-top: 1px;
+  min-width: 110px;
+}
+.d-info-val {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+}
+.d-info-val.mono {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* DRAWER: event history */
+.d-event-list { padding: 8px 18px 14px; }
+.d-event-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.d-event-item:last-child { border-bottom: 0; }
+.d-event-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+.d-event-icon svg { width: 15px; height: 15px; stroke: currentColor; }
+.ei-1 { background: linear-gradient(135deg, #6B7DA1, #3C4D70); }
+.ei-2 { background: linear-gradient(135deg, #4FAF7B, #1F6E45); }
+.ei-3 { background: linear-gradient(135deg, #B0A0DE, #6B4FA0); }
+.d-event-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.d-event-date { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.d-event-result {
+  margin-left: auto; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.d-event-result.attended { background: var(--green-soft); color: var(--green); }
+.d-event-result.missed   { background: #EFEAE0; color: var(--muted); }
+
+/* DRAWER FOOTER */
+.drawer-foot {
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+  background: var(--card);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.drawer-foot .btn { flex: 1; justify-content: center; }
+.btn-lock {
+  background: var(--red-soft);
+  color: var(--red);
+  border-color: transparent;
+}
+.btn-lock:hover { background: #F5D5D0; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .stat-tabs { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .stat-tabs { grid-template-columns: repeat(2, 1fr); }
+  .drawer { width: 100%; }
+}
+@media (max-width: 780px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .topbar { padding: 14px 20px; }
+  .page { padding: 20px; }
+  .search-box { width: 200px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="3"/>
+        <path d="M16 2v4M8 2v4M3 10h18"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">EventHub</div>
+      <div class="brand-sub">Admin Panel</div>
+    </div>
+  </div>
+
+  <div class="nav-group-label">Tổng quan</div>
+  <a class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+
+  <div class="nav-group-label">Quản lý</div>
+  <a class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Quản lý Sự kiện
+  </a>
+  <a class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Xét duyệt đăng ký
+    <span class="nav-badge">10</span>
+  </a>
+  <a class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
+    Điểm danh
+  </a>
+  <a class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Quản lý Người dùng
+  </a>
+
+  <div class="nav-group-label">Hệ thống</div>
+  <a class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Cài đặt
+  </a>
+
+  <div class="nav-spacer"></div>
+  <div class="logout">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Đăng xuất
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="breadcrumb">
+      <a>Admin</a>
+      <span class="sep">›</span>
+      <span class="current">Quản lý Người dùng</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input placeholder="Tìm kiếm sự kiện, người dùng...">
+      </div>
+      <button class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="dot"></span>
+      </button>
+      <div class="topbar-avatar">AH</div>
+    </div>
+  </header>
+
+  <!-- PAGE -->
+  <section class="page">
+
+    <!-- PAGE HEADER -->
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">Quản lý <em>Người dùng</em></h1>
+        <div class="page-sub">Tổng cộng <b>1,248 tài khoản</b> — Cập nhật lúc 09:15, 25/04/2025</div>
+      </div>
+      <div class="head-btns">
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Xuất Excel
+        </button>
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Nhập từ file
+        </button>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Thêm người dùng
+        </button>
+      </div>
+    </div>
+
+    <!-- STAT TABS -->
+    <div class="stat-tabs">
+
+      <div class="stat-tab active" onclick="filterTab(this,'all')">
+        <div class="stat-tab-icon all">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div>
+          <div class="stat-tab-num">1,248</div>
+          <div class="stat-tab-label">Tất cả</div>
+          <div class="stat-tab-delta">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18,15 12,9 6,15"/></svg>
+            +96 tháng này
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-tab" onclick="filterTab(this,'active')">
+        <div class="stat-tab-icon active-i">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div>
+          <div class="stat-tab-num">1,091</div>
+          <div class="stat-tab-label">Đang hoạt động</div>
+          <div class="stat-tab-delta">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18,15 12,9 6,15"/></svg>
+            87.4% tổng số
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-tab" onclick="filterTab(this,'new')">
+        <div class="stat-tab-icon new">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </div>
+        <div>
+          <div class="stat-tab-num">96</div>
+          <div class="stat-tab-label">Mới tháng này</div>
+          <div class="stat-tab-delta">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18,15 12,9 6,15"/></svg>
+            +23% so với tháng trước
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-tab" onclick="filterTab(this,'locked')">
+        <div class="stat-tab-icon locked">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <div>
+          <div class="stat-tab-num">34</div>
+          <div class="stat-tab-label">Bị khoá</div>
+          <div class="stat-tab-delta down">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18,9 12,15 6,9"/></svg>
+            -5 so với tháng trước
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-tab" onclick="filterTab(this,'admin')">
+        <div class="stat-tab-icon admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div class="stat-tab-num">12</div>
+          <div class="stat-tab-label">Quản trị viên</div>
+          <div class="stat-tab-delta">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Không đổi
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PANEL -->
+    <div class="panel">
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Tìm tên, email, mã nhân viên...">
+        </div>
+
+        <button class="filter-select">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><rect x="3" y="6" width="18" height="14" rx="2"/></svg>
+          Phòng ban: <b>Tất cả</b>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <button class="filter-select">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Vai trò: <b>Tất cả</b>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <button class="filter-select">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Trạng thái: <b>Tất cả</b>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <button class="filter-select">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Ngày tạo: <b>Tất cả</b>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <div class="filter-divider"></div>
+
+        <div class="bulk-actions">
+          <span class="bulk-count" id="bulkCount" style="display:none"><b id="selectedNum">0</b> đã chọn</span>
+          <button class="btn-sm success" id="bulkApprove" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Kích hoạt
+          </button>
+          <button class="btn-sm danger" id="bulkLock" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Khoá
+          </button>
+          <button class="btn-sm danger" id="bulkDelete" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            Xoá
+          </button>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:40px;padding-left:20px">
+                <div class="cbx" id="masterCbx" onclick="toggleAllCbx(this)"></div>
+              </th>
+              <th style="min-width:240px">
+                <div class="th-inner">
+                  Người dùng
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+                </div>
+              </th>
+              <th>Email</th>
+              <th>Phòng ban</th>
+              <th>Vai trò</th>
+              <th>Trạng thái</th>
+              <th class="sortable sorted">
+                <div class="th-inner">
+                  Sự kiện tham gia
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+              </th>
+              <th>Đăng nhập gần nhất</th>
+              <th>Ngày tạo</th>
+              <th style="width:90px">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="userTable">
+
+            <!-- Row 1 -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-purple">
+                    NT
+                    <div class="status-dot online"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Nguyễn Thị Thu Hà</div>
+                    <div class="user-id">USR-0001 · NV240112</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell">ha.ntt@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d1"></span>Phòng IT</span></td>
+              <td><span class="role-badge admin">Admin</span></td>
+              <td><span class="status-pill active">Hoạt động</span></td>
+              <td><span class="events-count">24 <small>sự kiện</small></span></td>
+              <td><div class="login-cell">Hôm nay, 08:42<small>Chrome · Hà Nội</small></div></td>
+              <td><div class="login-cell">12/01/2024</div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Chỉnh sửa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Khoá tài khoản">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-blue">
+                    LT
+                    <div class="status-dot online"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Lê Thanh Tuấn</div>
+                    <div class="user-id">USR-0002 · NV220458</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell">tuan.lt@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d1"></span>Phòng IT</span></td>
+              <td><span class="role-badge organizer">Ban tổ chức</span></td>
+              <td><span class="status-pill active">Hoạt động</span></td>
+              <td><span class="events-count">18 <small>sự kiện</small></span></td>
+              <td><div class="login-cell">Hôm nay, 07:58<small>Firefox · Hà Nội</small></div></td>
+              <td><div class="login-cell">05/03/2022</div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Chỉnh sửa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Khoá tài khoản">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-amber">
+                    TM
+                    <div class="status-dot offline"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Trần Minh Anh</div>
+                    <div class="user-id">USR-0003 · NV231087</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell">anh.tm@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d3"></span>Phòng Marketing</span></td>
+              <td><span class="role-badge manager">Quản lý</span></td>
+              <td><span class="status-pill active">Hoạt động</span></td>
+              <td><span class="events-count">31 <small>sự kiện</small></span></td>
+              <td><div class="login-cell">Hôm qua, 17:23<small>Safari · TP.HCM</small></div></td>
+              <td><div class="login-cell">18/06/2023</div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Chỉnh sửa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Khoá tài khoản">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 4 — LOCKED -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-slate">
+                    PQ
+                    <div class="status-dot locked"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Phạm Quốc Bảo</div>
+                    <div class="user-id">USR-0004 · NV210233</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell" style="color:var(--muted)">bao.pq@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d5"></span>Phòng Kế toán</span></td>
+              <td><span class="role-badge user">Nhân viên</span></td>
+              <td><span class="status-pill locked">Bị khoá</span></td>
+              <td><span class="events-count" style="color:var(--muted)">7 <small>sự kiện</small></span></td>
+              <td><div class="login-cell" style="color:var(--muted)">12/04/2025<small>—</small></div></td>
+              <td><div class="login-cell">20/08/2021</div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn success" title="Mở khoá">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 019.9-1"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Xoá tài khoản">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 5 -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-green">
+                    HL
+                    <div class="status-dot online"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Hoàng Lan Phương</div>
+                    <div class="user-id">USR-0005 · NV230671</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell">phuong.hl@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d2"></span>Phòng Nhân sự</span></td>
+              <td><span class="role-badge organizer">Ban tổ chức</span></td>
+              <td><span class="status-pill active">Hoạt động</span></td>
+              <td><span class="events-count">15 <small>sự kiện</small></span></td>
+              <td><div class="login-cell">Hôm nay, 09:05<small>Chrome · Hà Nội</small></div></td>
+              <td><div class="login-cell">03/02/2023</div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Chỉnh sửa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Khoá tài khoản">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 6 -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-teal">
+                    VM
+                    <div class="status-dot offline"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Vũ Minh Hoàng</div>
+                    <div class="user-id">USR-0006 · NV240390</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell">hoang.vm@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d4"></span>Phòng Kinh doanh</span></td>
+              <td><span class="role-badge user">Nhân viên</span></td>
+              <td><span class="status-pill active">Hoạt động</span></td>
+              <td><span class="events-count">9 <small>sự kiện</small></span></td>
+              <td><div class="login-cell">23/04/2025<small>Mobile · Đà Nẵng</small></div></td>
+              <td><div class="login-cell">14/01/2024</div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Chỉnh sửa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Khoá tài khoản">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 7 — PENDING (mới tháng này) -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-rose">
+                    DK
+                    <div class="status-dot offline"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Đỗ Khánh Linh</div>
+                    <div class="user-id">USR-1248 · NV250095</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell">linh.dk@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d6"></span>Phòng R&D</span></td>
+              <td><span class="role-badge user">Nhân viên</span></td>
+              <td><span class="status-pill pending">Chờ xác minh</span></td>
+              <td><span class="events-count" style="color:var(--muted)">0 <small>sự kiện</small></span></td>
+              <td><div class="login-cell" style="color:var(--muted)">—<small>Chưa đăng nhập</small></div></td>
+              <td><div class="login-cell" style="color:var(--green);font-weight:600">20/04/2025 <span style="font-size:10px;font-weight:400;margin-left:3px;background:var(--green-soft);color:var(--green);padding:1px 6px;border-radius:999px">Mới</span></div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn success" title="Kích hoạt">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Từ chối">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 8 -->
+            <tr>
+              <td style="padding-left:20px"><div class="cbx" data-cbx onclick="toggleCbx(this)"></div></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar av-blue" style="background:linear-gradient(135deg,#5DA679,#2E6B47)">
+                    BN
+                    <div class="status-dot offline"></div>
+                  </div>
+                  <div>
+                    <div class="user-name">Bùi Ngọc Hải</div>
+                    <div class="user-id">USR-0089 · NV220819</div>
+                  </div>
+                </div>
+              </td>
+              <td class="email-cell">hai.bn@company.vn</td>
+              <td><span class="dept-cell"><span class="dept-dot d2"></span>Phòng Nhân sự</span></td>
+              <td><span class="role-badge manager">Quản lý</span></td>
+              <td><span class="status-pill active">Hoạt động</span></td>
+              <td><span class="events-count">22 <small>sự kiện</small></span></td>
+              <td><div class="login-cell">22/04/2025<small>Chrome · Hà Nội</small></div></td>
+              <td><div class="login-cell">09/07/2022</div></td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="Xem chi tiết" onclick="openDrawer(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-btn" title="Chỉnh sửa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="row-btn danger" title="Khoá tài khoản">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        <div class="pag-info">Hiển thị <b>1–8</b> trong tổng số <b>1,248</b> người dùng</div>
+        <div class="pag-controls">
+          <button class="pag-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+          </button>
+          <button class="pag-btn active">1</button>
+          <button class="pag-btn">2</button>
+          <button class="pag-btn">3</button>
+          <span style="padding:0 4px;color:var(--muted);font-size:13px">…</span>
+          <button class="pag-btn">156</button>
+          <button class="pag-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+          </button>
+        </div>
+        <button class="pag-size">
+          8 / trang
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+
+    </div><!-- /panel -->
+
+  </section>
+</main>
+</div>
+
+<!-- ══════════════════════════════════════════
+   USER DETAIL DRAWER
+══════════════════════════════════════════ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="drawer-title">Chi tiết tài khoản</span>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+    <!-- Profile hero -->
+    <div class="d-profile">
+      <div class="d-avatar-wrap">
+        <div class="d-avatar">NT</div>
+        <div class="d-status-ring"></div>
+      </div>
+      <div class="d-name">Nguyễn Thị Thu Hà</div>
+      <div class="d-email">ha.ntt@company.vn</div>
+      <div class="d-badges">
+        <span class="role-badge admin">Admin</span>
+        <span class="status-pill active">Hoạt động</span>
+      </div>
+      <div class="d-quick-stats">
+        <div class="d-quick-stat">
+          <div class="d-quick-num">24</div>
+          <div class="d-quick-label">Sự kiện<br>tham gia</div>
+        </div>
+        <div class="d-quick-stat">
+          <div class="d-quick-num">21</div>
+          <div class="d-quick-label">Đã<br>điểm danh</div>
+        </div>
+        <div class="d-quick-stat">
+          <div class="d-quick-num">88%</div>
+          <div class="d-quick-label">Tỉ lệ<br>tham dự</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thông tin cơ bản -->
+    <div class="d-section">
+      <div class="d-section-head">
+        <div class="d-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Thông tin cơ bản
+        </div>
+        <a class="d-edit-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Chỉnh sửa
+        </a>
+      </div>
+      <div class="d-info-list">
+        <div class="d-info-row">
+          <span class="d-info-label">Họ và tên</span>
+          <span class="d-info-val">Nguyễn Thị Thu Hà</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Mã nhân viên</span>
+          <span class="d-info-val mono">NV240112</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Email</span>
+          <span class="d-info-val mono">ha.ntt@company.vn</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Số điện thoại</span>
+          <span class="d-info-val">0912 345 678</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Phòng ban</span>
+          <span class="d-info-val"><span class="dept-cell"><span class="dept-dot d1"></span>Phòng IT</span></span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Chức vụ</span>
+          <span class="d-info-val">Trưởng phòng IT</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Giới tính</span>
+          <span class="d-info-val">Nữ</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Ngày sinh</span>
+          <span class="d-info-val">14/03/1992</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thông tin tài khoản -->
+    <div class="d-section">
+      <div class="d-section-head">
+        <div class="d-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Thông tin tài khoản
+        </div>
+      </div>
+      <div class="d-info-list">
+        <div class="d-info-row">
+          <span class="d-info-label">ID hệ thống</span>
+          <span class="d-info-val mono">USR-0001</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Vai trò</span>
+          <span class="d-info-val"><span class="role-badge admin">Admin</span></span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Trạng thái</span>
+          <span class="d-info-val"><span class="status-pill active">Hoạt động</span></span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Xác thực 2 lớp</span>
+          <span class="d-info-val" style="color:var(--green)">✓ Đã bật</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Ngày tạo tài khoản</span>
+          <span class="d-info-val">12/01/2024</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Đăng nhập gần nhất</span>
+          <span class="d-info-val">Hôm nay, 08:42</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">Thiết bị / Trình duyệt</span>
+          <span class="d-info-val">Chrome 124 · Windows 11</span>
+        </div>
+        <div class="d-info-row">
+          <span class="d-info-label">IP đăng nhập</span>
+          <span class="d-info-val mono">192.168.1.42</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lịch sử sự kiện -->
+    <div class="d-section">
+      <div class="d-section-head">
+        <div class="d-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Sự kiện gần đây
+        </div>
+        <a class="d-edit-link">Xem tất cả</a>
+      </div>
+      <div class="d-event-list">
+        <div class="d-event-item">
+          <div class="d-event-icon ei-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <div class="d-event-name">Hội thảo Chuyển đổi Số 2025</div>
+            <div class="d-event-date">01/05/2025</div>
+          </div>
+          <span class="d-event-result attended">✓ Đã tham dự</span>
+        </div>
+        <div class="d-event-item">
+          <div class="d-event-icon ei-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <div class="d-event-name">Team Building Mùa Hè 2025</div>
+            <div class="d-event-date">10/05/2025</div>
+          </div>
+          <span class="d-event-result attended">✓ Đã tham dự</span>
+        </div>
+        <div class="d-event-item">
+          <div class="d-event-icon ei-3">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div class="d-event-name">Workshop An ninh Mạng nội bộ</div>
+            <div class="d-event-date">18/03/2025</div>
+          </div>
+          <span class="d-event-result missed">✗ Vắng mặt</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ghi chú -->
+    <div class="d-section">
+      <div class="d-section-head">
+        <div class="d-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Ghi chú Admin
+        </div>
+        <a class="d-edit-link">Thêm ghi chú</a>
+      </div>
+      <div style="padding:14px 18px;">
+        <textarea style="width:100%;min-height:72px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;font-size:12.5px;color:var(--ink);background:var(--bg);resize:vertical;outline:none;" placeholder="Thêm ghi chú về người dùng này..."></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="drawer-foot">
+    <button class="btn btn-lock">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Khoá tài khoản
+    </button>
+    <button class="btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Chỉnh sửa
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+   SCRIPT
+══════════════════════════════ -->
+<script>
+// ── Drawer ──
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawer(); });
+
+// ── Checkbox ──
+function toggleCbx(el) {
+  el.classList.toggle('checked');
+  updateBulkActions();
+  updateMasterCbx();
+}
+
+function toggleAllCbx(master) {
+  const allBoxes = document.querySelectorAll('[data-cbx]');
+  const shouldCheck = !master.classList.contains('checked') && !master.classList.contains('indeterminate');
+  master.classList.toggle('checked', shouldCheck);
+  master.classList.remove('indeterminate');
+  allBoxes.forEach(c => c.classList.toggle('checked', shouldCheck));
+  updateBulkActions();
+}
+
+function updateMasterCbx() {
+  const allBoxes = document.querySelectorAll('[data-cbx]');
+  const checked = document.querySelectorAll('[data-cbx].checked');
+  const master = document.getElementById('masterCbx');
+  master.classList.toggle('checked', checked.length === allBoxes.length && allBoxes.length > 0);
+  master.classList.toggle('indeterminate', checked.length > 0 && checked.length < allBoxes.length);
+  if(checked.length === 0) master.classList.remove('checked','indeterminate');
+}
+
+function updateBulkActions() {
+  const checked = document.querySelectorAll('[data-cbx].checked');
+  const n = checked.length;
+  const count = document.getElementById('bulkCount');
+  const approveBtn = document.getElementById('bulkApprove');
+  const lockBtn = document.getElementById('bulkLock');
+  const deleteBtn = document.getElementById('bulkDelete');
+  if(n > 0) {
+    document.getElementById('selectedNum').textContent = n;
+    count.style.display = 'inline';
+    approveBtn.style.display = 'inline-flex';
+    lockBtn.style.display = 'inline-flex';
+    deleteBtn.style.display = 'inline-flex';
+  } else {
+    count.style.display = 'none';
+    approveBtn.style.display = 'none';
+    lockBtn.style.display = 'none';
+    deleteBtn.style.display = 'none';
+  }
+}
+
+// ── Stat tabs ──
+function filterTab(el) {
+  document.querySelectorAll('.stat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Add user placeholder ──
+function openAddModal() {
+  alert('Mở form thêm người dùng mới');
+}
+</script>
+
+</body>
+</html>

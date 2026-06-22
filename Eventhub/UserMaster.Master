@@ -1,0 +1,124 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="UserMaster.Master.cs" Inherits="Eventhub.UserMaster" %>
+
+<!DOCTYPE html>
+<html lang="vi">
+<head runat="server">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><asp:ContentPlaceHolder ID="TitleContent" runat="server">EventHub Nội Bộ</asp:ContentPlaceHolder></title>
+
+    <%-- Google Fonts --%>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <%-- CSS chung --%>
+    <link href="<%= ResolveUrl("~/Content/User.css") %>" rel="stylesheet" type="text/css" />
+
+    <%-- CSS/JS riêng cho trang con --%>
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+</head>
+<body>
+<form id="form1" runat="server">
+
+<%-- ════════════ DARK ZONE (header + hero) ════════════ --%>
+<div class="dark-zone">
+
+    <%-- ─── HEADER ─── --%>
+    <header class="header">
+        <a href="<%= ResolveUrl("~/User/UserHome.aspx") %>" class="brand">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="3"/>
+                    <path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+            </div>
+            <div class="brand-name">EventHub</div>
+        </a>
+
+        <nav class="nav-center">
+            <a class='nav-link <%= GetActiveClass("UserHome") %>'
+               href="<%= ResolveUrl("~/User/UserHome.aspx") %>">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+                Trang chủ
+            </a>
+            <a class='nav-link <%= GetActiveClass("UserMyEvents") %>'
+               href="<%= ResolveUrl("~/User/UserMyEvents.aspx") %>">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Sự kiện của tôi
+            </a>
+            <a class='nav-link <%= GetActiveClass("UserDiscover", "UserEventDetail") %>'
+               href="<%= ResolveUrl("~/User/UserDiscover.aspx") %>">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                Khám phá
+            </a>
+        </nav>
+
+        <div class="header-right">
+            <button type="button" class="icon-btn-dark" title="Tìm kiếm">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <button type="button" class="icon-btn-dark" title="Thông báo">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                <asp:Panel ID="pnlNotifDot" runat="server" CssClass="dot" />
+            </button>
+
+            <%-- User chip: click vào → trang Profile, có nút logout riêng --%>
+            <a href="<%= ResolveUrl("~/User/UserProfile.aspx") %>" class="user-chip" title="Hồ sơ cá nhân">
+                <div class="user-chip-avatar"><asp:Literal ID="ltrUserInitial" runat="server" Text="?" /></div>
+                <div class="user-chip-text">
+                    <div class="user-chip-name"><asp:Literal ID="ltrUserName" runat="server" Text="Người dùng" /></div>
+                    <div class="user-chip-role"><asp:Literal ID="ltrUserDept" runat="server" Text="—" /></div>
+                </div>
+            </a>
+
+            <asp:LinkButton ID="btnLogout" runat="server" CssClass="icon-btn-dark" title="Đăng xuất"
+                            OnClick="btnLogout_Click" CausesValidation="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </asp:LinkButton>
+        </div>
+    </header>
+
+    <%-- ─── HERO (trang con tự đặt) ─── --%>
+    <asp:ContentPlaceHolder ID="HeroContent" runat="server" />
+
+</div>
+
+<%-- ════════════ LIGHT ZONE (nội dung chính trang con) ════════════ --%>
+<main>
+    <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+</main>
+
+<%-- ════════════ FOOTER ════════════ --%>
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-left">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="3"/>
+                    <path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+            </div>
+            <div>
+                <div class="footer-brand">EventHub</div>
+                <div class="footer-copy">© <%= DateTime.Now.Year %> Công ty TNHH ABC. Bảo lưu mọi quyền.</div>
+            </div>
+        </div>
+        <div class="footer-links">
+            <a href="#">Hướng dẫn sử dụng</a>
+            <a href="#">Điều khoản</a>
+            <a href="#">Bảo mật</a>
+            <a href="#">Sitemap</a>
+        </div>
+        <div class="footer-contact">
+            Hỗ trợ Ban tổ chức sự kiện: <a href="mailto:support@congty.vn">support@congty.vn</a>
+        </div>
+    </div>
+</footer>
+
+<%-- Scripts placeholder --%>
+<asp:ContentPlaceHolder ID="ScriptContent" runat="server" />
+
+</form>
+</body>
+</html>

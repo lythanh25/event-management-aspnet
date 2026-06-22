@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Điểm danh — Hội thảo CĐS 2025 | EventHub Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F1ECE3;
+    --bg-deep: #E5DDD0;
+    --ink: #1A1410;
+    --ink-soft: #4A3F36;
+    --muted: #8A7E72;
+    --line: #E8DFD0;
+    --line-strong: #D8CDB9;
+    --card: #FFFFFF;
+    --sidebar: #15110D;
+    --amber: #E89B3C;
+    --amber-soft: #F5B96A;
+    --amber-bg: #FBF4E7;
+    --green: #2F8F5E;
+    --green-soft: #E2EFE7;
+    --green-row: #F4FAF6;
+    --red: #C84B3B;
+    --red-soft: #FBECE9;
+    --blue: #5B7CC4;
+    --blue-soft: #E2E8F4;
+    --purple: #8E7FBE;
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button, a { font: inherit; }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: 'Geist Mono', monospace; }
+
+  /* ─── LAYOUT ─── */
+  .app {
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    background: var(--sidebar);
+    color: #C9BFB1;
+    padding: 22px 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 8px 22px;
+    border-bottom: 1px solid #2A241D;
+    margin-bottom: 16px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, var(--amber-soft), var(--amber));
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(232,155,60,0.25);
+  }
+  .brand-mark svg { width: 17px; height: 17px; stroke: #1A1410; }
+  .brand-name { color: #fff; font-weight: 600; font-size: 14.5px; line-height: 1.2; }
+  .brand-sub { color: #6B5F52; font-size: 11px; margin-top: 1px; }
+
+  .nav-group-label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #5A5046; padding: 12px 10px 6px; font-weight: 500;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 10px;
+    border-radius: 7px;
+    color: #B5AB9D;
+    font-size: 13px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .nav-item svg { width: 17px; height: 17px; stroke: currentColor; opacity: 0.85; flex-shrink: 0; }
+  .nav-item:hover { background: #1F1A14; color: #fff; }
+  .nav-item.active {
+    background: linear-gradient(180deg, rgba(232,155,60,0.18), rgba(232,155,60,0.10));
+    color: #F4D9A8;
+    box-shadow: inset 0 0 0 1px rgba(232,155,60,0.15);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -14px; top: 8px; bottom: 8px;
+    width: 3px; background: var(--amber);
+    border-radius: 0 3px 3px 0;
+  }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red); color: #fff;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 999px;
+    line-height: 1.4;
+  }
+  .nav-spacer { flex: 1; }
+  .logout {
+    display: flex; align-items: center; gap: 11px;
+    padding: 10px;
+    border-top: 1px solid #2A241D;
+    color: #8A7E70; font-size: 13px;
+    cursor: pointer; margin-top: 8px;
+  }
+  .logout:hover { color: #fff; }
+  .logout svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  /* ─── MAIN ─── */
+  .main { display: flex; flex-direction: column; min-width: 0; }
+
+  /* topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--muted);
+  }
+  .breadcrumb .sep { opacity: 0.5; }
+  .breadcrumb .current { color: var(--ink); font-weight: 500; }
+  .breadcrumb a { color: var(--muted); cursor: pointer; }
+  .breadcrumb a:hover { color: var(--ink-soft); }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 12px;
+    margin-left: auto;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 7px 12px;
+    width: 280px;
+    color: var(--muted);
+  }
+  .search-box svg { width: 14px; height: 14px; stroke: currentColor; flex-shrink: 0; }
+  .search-box input { flex: 1; border: 0; outline: 0; background: transparent; font-size: 13px; color: var(--ink); }
+  .search-box input::placeholder { color: var(--muted); }
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    display: grid; place-items: center;
+    color: var(--ink-soft);
+    cursor: pointer; position: relative;
+  }
+  .icon-btn:hover { border-color: var(--line-strong); }
+  .icon-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+  .icon-btn .dot {
+    position: absolute; top: 8px; right: 8px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--red); box-shadow: 0 0 0 2px var(--card);
+  }
+  .avatar-sm {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #2A241D, var(--ink));
+    display: grid; place-items: center;
+    color: #F5EFE6; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  .avatar-sm svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  /* ─── PAGE ─── */
+  .page { padding: 24px 32px 40px; max-width: 1480px; width: 100%; }
+
+  /* ─── LIVE EVENT BANNER ─── */
+  .live-banner {
+    background:
+      radial-gradient(circle at 85% 25%, rgba(232,155,60,0.20), transparent 55%),
+      radial-gradient(circle at 10% 90%, rgba(47,143,94,0.10), transparent 50%),
+      linear-gradient(135deg, #1A1410 0%, #2A241D 60%, #3A2A1C 100%);
+    color: #F5EFE6;
+    border-radius: 16px;
+    padding: 22px 28px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .live-banner::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent 0 28px, rgba(255,255,255,0.012) 28px 29px);
+    pointer-events: none;
+  }
+  .live-banner-left { position: relative; z-index: 1; min-width: 0; }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 4px 10px;
+    background: rgba(200, 75, 59, 0.18);
+    border: 1px solid rgba(200, 75, 59, 0.4);
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #FFA89A;
+    margin-bottom: 10px;
+  }
+  .live-pill::before {
+    content: '';
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #FF5A45;
+    box-shadow: 0 0 0 0 rgba(255,90,69,0.6);
+    animation: livepulse 1.4s ease-in-out infinite;
+  }
+  @keyframes livepulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,90,69,0.6); }
+    70% { box-shadow: 0 0 0 8px rgba(255,90,69,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,90,69,0); }
+  }
+  .live-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 30px;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .live-meta {
+    display: flex; flex-wrap: wrap; gap: 22px;
+    color: #C9BFB1; font-size: 12.5px;
+  }
+  .live-meta > div { display: inline-flex; align-items: center; gap: 6px; }
+  .live-meta svg { width: 12px; height: 12px; stroke: #8B7E6F; }
+  .live-meta strong { color: #F4D9A8; font-weight: 500; }
+  .live-meta-divider { color: rgba(255,255,255,0.15); }
+
+  .live-banner-right {
+    position: relative; z-index: 1;
+    text-align: right;
+  }
+  .live-ring-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 56px;
+    line-height: 1;
+    color: #fff;
+    display: flex; align-items: baseline; justify-content: flex-end; gap: 6px;
+  }
+  .live-ring-num small {
+    font-family: 'Geist', sans-serif;
+    font-size: 15px;
+    color: #8B7E6F;
+    font-weight: 400;
+  }
+  .live-ring-lbl {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: #8B7E6F;
+    letter-spacing: 0.08em;
+    margin-top: 5px;
+    text-transform: uppercase;
+  }
+
+  /* ─── STATS ─── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .stat-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .stat-icon.green { background: var(--green); color: #fff; }
+  .stat-icon.amber { background: var(--amber-bg); color: #B36F12; }
+  .stat-icon.red { background: var(--red); color: #fff; }
+  .stat-icon.dark { background: var(--bg-deep); color: var(--ink); }
+  .stat-icon svg { width: 16px; height: 16px; stroke: currentColor; }
+  .stat-body { flex: 1; min-width: 0; }
+  .stat-label {
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .stat-value small {
+    font-family: 'Geist', sans-serif;
+    font-size: 12px; color: var(--muted);
+    font-weight: 500;
+  }
+  .stat-sub {
+    font-size: 11.5px; color: var(--muted);
+    margin-top: 2px;
+  }
+  .stat-progress {
+    height: 4px;
+    background: var(--bg-deep);
+    border-radius: 4px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .stat-progress > div {
+    height: 100%;
+    border-radius: 4px;
+  }
+  .stat-progress .green { background: var(--green); }
+  .stat-progress .amber { background: var(--amber); }
+
+  /* ─── QUICK BAR ─── */
+  .quickbar {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .quick-search-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 22px;
+  }
+  .qs-row {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .qs-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #fff;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .qs-icon svg { width: 20px; height: 20px; stroke: currentColor; }
+  .qs-content { flex: 1; min-width: 0; }
+  .qs-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .qs-title em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--amber);
+    margin-left: 2px;
+  }
+  .qs-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .qs-input-wrap {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px;
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    background: #FDFAF5;
+    padding: 8px 14px;
+  }
+  .qs-input-wrap input {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font: inherit; font-size: 14px; color: var(--ink);
+  }
+  .qs-input-wrap input::placeholder { color: var(--muted); }
+  .qs-input-wrap kbd {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    background: var(--bg-deep);
+    color: var(--ink-soft);
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--line);
+  }
+
+  .qr-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .qr-card:hover { border-color: var(--line-strong); }
+  .qr-icon-wrap {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #F4D9A8;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .qr-icon-wrap::after {
+    content: '';
+    position: absolute; inset: 4px;
+    border: 1.5px dashed rgba(244,217,168,0.3);
+    border-radius: 7px;
+  }
+  .qr-icon-wrap svg {
+    width: 20px; height: 20px; stroke: currentColor;
+    position: relative; z-index: 1;
+  }
+  .qr-content { flex: 1; min-width: 0; }
+  .qr-title {
+    font-size: 14px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .qr-sub {
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  /* ─── GRID ─── */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+  }
+
+  /* ─── PANEL ─── */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--line);
+    padding: 0 8px;
+    gap: 2px;
+    overflow-x: auto;
+    background: #FDFAF5;
+  }
+  .tab {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 12px 14px;
+    font-size: 13px; font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .tab:hover { color: var(--ink-soft); }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab svg { width: 13px; height: 13px; stroke: currentColor; }
+  .tab-count {
+    background: var(--bg-deep);
+    color: var(--ink-soft);
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .tab.active .tab-count { background: var(--ink); color: #fff; }
+  .tab.green .tab-count { background: var(--green-soft); color: var(--green); }
+  .tab.amber .tab-count { background: var(--amber-bg); color: #B36F12; }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+    flex-wrap: wrap;
+  }
+  .toolbar .search-inline {
+    flex: 1; min-width: 200px;
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 11px;
+    background: #FDFAF5;
+    color: var(--muted);
+  }
+  .toolbar .search-inline svg { width: 13px; height: 13px; stroke: currentColor; }
+  .toolbar .search-inline input {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font: inherit; font-size: 12.5px;
+    color: var(--ink);
+  }
+  .toolbar .search-inline input::placeholder { color: var(--muted); }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--card);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .filter-chip:hover { border-color: var(--line-strong); }
+  .filter-chip svg { width: 12px; height: 12px; stroke: currentColor; opacity: 0.6; }
+  .toolbar-right { margin-left: auto; }
+
+  /* ATTENDANCE LIST */
+  .attlist {
+    padding: 0;
+    max-height: 720px;
+    overflow-y: auto;
+  }
+  .attlist::-webkit-scrollbar { width: 8px; }
+  .attlist::-webkit-scrollbar-track { background: transparent; }
+  .attlist::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+
+  .att-row {
+    display: grid;
+    grid-template-columns: 40px 1fr auto 80px;
+    gap: 14px;
+    align-items: center;
+    padding: 11px 18px;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.15s ease;
+    position: relative;
+  }
+  .att-row:last-child { border-bottom: 0; }
+  .att-row:hover { background: #FDFAF5; }
+  .att-row.checked-in {
+    background: linear-gradient(90deg, var(--green-row), transparent 90%);
+  }
+  .att-row.checked-in:hover { background: linear-gradient(90deg, #ECF6EF, transparent 90%); }
+  .att-row.late::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 14px; bottom: 14px;
+    width: 3px; background: var(--amber);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .att-num {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .att-row.checked-in .att-num { color: var(--green); }
+
+  .att-user { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .att-avatar {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .att-avatar.av-1 { background: linear-gradient(135deg, #E89B3C, #B36F12); }
+  .att-avatar.av-2 { background: linear-gradient(135deg, #2F8F5E, #1F6E45); }
+  .att-avatar.av-3 { background: linear-gradient(135deg, #7B5CD6, #5A3FA8); }
+  .att-avatar.av-4 { background: linear-gradient(135deg, #C84B3B, #8F2D20); }
+  .att-avatar.av-5 { background: linear-gradient(135deg, #3D6BB8, #2A4D86); }
+  .att-avatar.av-6 { background: linear-gradient(135deg, #4A3F36, #1A1410); }
+  .att-avatar.av-7 { background: linear-gradient(135deg, #5DA679, #2E6B47); }
+  .att-avatar.av-8 { background: linear-gradient(135deg, #B97C7C, #6B3838); }
+  .att-avatar .check-dot {
+    position: absolute;
+    bottom: -3px; right: -3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2.5px solid #fff;
+    color: #fff;
+    display: grid; place-items: center;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .att-avatar .check-dot svg { width: 9px; height: 9px; stroke: currentColor; }
+  .att-row.checked-in .att-avatar .check-dot { opacity: 1; transform: scale(1); }
+
+  .att-name {
+    font-size: 13px; font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .att-info {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .att-info .mono { font-family: 'Geist Mono', monospace; }
+
+  /* dept tag */
+  .dept-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--bg-deep);
+    color: var(--ink-soft);
+    font-size: 11px; font-weight: 500;
+  }
+  .dept-tag::before {
+    content: ''; width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--ink-soft);
+  }
+  .dept-tag.it::before { background: var(--blue); }
+  .dept-tag.mkt::before { background: var(--amber); }
+  .dept-tag.hr::before { background: var(--purple); }
+  .dept-tag.fin::before { background: var(--green); }
+  .dept-tag.ops::before { background: var(--red); }
+  .dept-tag.partner::before { background: #8C5A2C; }
+
+  /* arrival time */
+  .att-time {
+    text-align: right;
+    min-width: 80px;
+  }
+  .att-time-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: 5px;
+    background: var(--green-soft);
+    color: var(--green);
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .att-time-late {
+    background: var(--amber-bg);
+    color: #B36F12;
+  }
+  .att-time-empty {
+    color: var(--muted);
+    font-size: 11.5px;
+    font-family: 'Geist Mono', monospace;
+  }
+
+  /* big toggle switch */
+  .toggle {
+    position: relative;
+    width: 56px; height: 28px;
+    background: var(--bg-deep);
+    border: 1.5px solid var(--line-strong);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 1px; left: 1px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  .toggle.on {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .toggle.on::after {
+    left: calc(100% - 24px);
+  }
+
+  /* pagination */
+  .panel-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px;
+    border-top: 1px solid var(--line);
+    background: #FDFAF5;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .panel-footer b { color: var(--ink); }
+  .pag-mini {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pag-mini-btn {
+    padding: 6px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-soft);
+    font: inherit; font-size: 12px;
+    cursor: pointer;
+  }
+  .pag-mini-btn:hover { border-color: var(--line-strong); }
+
+  /* ─── SIDE COLUMN ─── */
+  .side-col {
+    display: flex; flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 86px;
+    align-self: start;
+  }
+
+  /* feed card */
+  .feed-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .feed-head {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .feed-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 17px;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .feed-live {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    text-transform: uppercase;
+  }
+  .feed-live::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .feed-list {
+    padding: 4px 0;
+    max-height: 440px;
+    overflow-y: auto;
+  }
+  .feed-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 18px;
+    transition: background 0.15s ease;
+  }
+  .feed-item:hover { background: #FDFAF5; }
+  .feed-avatar {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .feed-content { flex: 1; min-width: 0; }
+  .feed-name {
+    font-size: 12.5px; font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 1px;
+  }
+  .feed-meta {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .feed-time {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--green);
+    flex-shrink: 0;
+    background: var(--green-soft);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+  .feed-time.late { color: #B36F12; background: var(--amber-bg); }
+
+  /* dept progress card */
+  .dept-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .dept-card-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .dept-card-sub {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .dept-bar {
+    margin-bottom: 10px;
+  }
+  .dept-bar:last-child { margin-bottom: 0; }
+  .dept-bar-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+    font-size: 12px;
+  }
+  .dept-bar-name {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--ink-soft); font-weight: 500;
+  }
+  .dept-bar-name::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+  }
+  .dept-bar.it .dept-bar-name::before { background: var(--blue); }
+  .dept-bar.mkt .dept-bar-name::before { background: var(--amber); }
+  .dept-bar.hr .dept-bar-name::before { background: var(--purple); }
+  .dept-bar.fin .dept-bar-name::before { background: var(--green); }
+  .dept-bar.ops .dept-bar-name::before { background: var(--red); }
+  .dept-bar-value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .dept-bar-value b { color: var(--ink); font-weight: 600; }
+  .dept-bar-track {
+    height: 5px; background: var(--bg-deep);
+    border-radius: 3px; overflow: hidden;
+  }
+  .dept-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .dept-bar.it .dept-bar-fill { background: linear-gradient(90deg, #8DA8DC, var(--blue)); }
+  .dept-bar.mkt .dept-bar-fill { background: linear-gradient(90deg, var(--amber-soft), var(--amber)); }
+  .dept-bar.hr .dept-bar-fill { background: linear-gradient(90deg, #B7A8E0, var(--purple)); }
+  .dept-bar.fin .dept-bar-fill { background: linear-gradient(90deg, #4FAF7B, var(--green)); }
+  .dept-bar.ops .dept-bar-fill { background: linear-gradient(90deg, #DD7868, var(--red)); }
+
+  /* close button */
+  .close-session {
+    background: var(--ink);
+    color: #F4D9A8;
+    border: 0;
+    padding: 14px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%;
+    transition: background 0.15s ease;
+  }
+  .close-session:hover { background: #2A241D; }
+  .close-session svg { width: 15px; height: 15px; stroke: currentColor; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1200px) {
+    .grid { grid-template-columns: 1fr; }
+    .side-col { position: static; }
+    .quickbar { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 780px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .topbar { padding: 14px 20px; }
+    .page { padding: 20px; }
+    .stats { grid-template-columns: 1fr; }
+    .live-banner { grid-template-columns: 1fr; }
+    .live-banner-right { text-align: left; }
+    .att-row { grid-template-columns: 30px 1fr 70px; gap: 10px; }
+    .att-row .att-time { display: none; }
+    .live-title { font-size: 22px; }
+    .search-box { width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="3"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">EventHub</div>
+        <div class="brand-sub">Admin Panel</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Tổng quan</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+
+    <div class="nav-group-label">Quản lý</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Quản lý Sự kiện
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Xét duyệt đăng ký
+      <span class="nav-badge">52</span>
+    </a>
+    <a class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
+      Điểm danh
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Quản lý Người dùng
+    </a>
+
+    <div class="nav-group-label">Hệ thống</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Cài đặt
+    </a>
+
+    <div class="nav-spacer"></div>
+    <div class="logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Đăng xuất
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main">
+
+    <header class="topbar">
+      <div class="breadcrumb">
+        <span>Admin</span>
+        <span class="sep">›</span>
+        <a>Điểm danh</a>
+        <span class="sep">›</span>
+        <span class="current">Hội thảo CĐS 2025</span>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Tìm kiếm sự kiện, người dùng..." />
+        </div>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="page">
+
+      <!-- ═════════ LIVE BANNER ═════════ -->
+      <div class="live-banner">
+        <div class="live-banner-left">
+          <span class="live-pill">SỰ KIỆN ĐANG DIỄN RA</span>
+          <h2 class="live-title">Điểm danh — Hội thảo Chuyển đổi số 2025</h2>
+          <div class="live-meta">
+            <div>
+              <strong>22 / 04 / 2025</strong>
+            </div>
+            <span class="live-meta-divider">·</span>
+            <div>Bắt đầu lúc <strong>08:30</strong></div>
+            <span class="live-meta-divider">·</span>
+            <div>Hội trường A — TT Hội nghị Quốc gia</div>
+            <span class="live-meta-divider">·</span>
+            <div>Phụ trách: <strong>Anh Hoàng</strong></div>
+          </div>
+        </div>
+
+        <div class="live-banner-right">
+          <div class="live-ring-num">87 <small>/ 148</small></div>
+          <div class="live-ring-lbl">ĐÃ CÓ MẶT</div>
+        </div>
+      </div>
+
+      <!-- ═════════ STATS ═════════ -->
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-icon dark">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-label">Đã được duyệt</div>
+            <div class="stat-value">148</div>
+            <div class="stat-sub">Tổng người dự kiến</div>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-label">Đã có mặt</div>
+            <div class="stat-value" id="presentCount">87 <small>người</small></div>
+            <div class="stat-progress"><div class="green" id="presentBar" style="width: 58.7%"></div></div>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-label">Chưa đến</div>
+            <div class="stat-value" id="absentCount">61 <small>người</small></div>
+            <div class="stat-progress"><div class="amber" id="absentBar" style="width: 41.3%"></div></div>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-icon red">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-label">Đến muộn</div>
+            <div class="stat-value">9 <small>người</small></div>
+            <div class="stat-sub">Sau 09:00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═════════ QUICK BAR ═════════ -->
+      <div class="quickbar">
+        <div class="quick-search-card">
+          <div class="qs-row">
+            <div class="qs-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
+            </div>
+            <div class="qs-content">
+              <div class="qs-title">Điểm danh <em>nhanh</em></div>
+              <div class="qs-sub">Gõ tên / mã NV để tự động đánh dấu có mặt</div>
+            </div>
+          </div>
+          <div class="qs-input-wrap">
+            <input id="quickInput" placeholder="Tên hoặc mã EMP-..." autofocus />
+            <kbd>Enter</kbd>
+          </div>
+        </div>
+
+        <div class="qr-card">
+          <div class="qr-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <div class="qr-content">
+            <div class="qr-title">Quét mã QR</div>
+            <div class="qr-sub">Mở camera, quét vé sự kiện</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═════════ GRID ═════════ -->
+      <div class="grid">
+
+        <!-- ─── LEFT: LIST ─── -->
+        <div class="panel">
+          <div class="tabs" id="tabs">
+            <div class="tab active" data-tab="all">
+              Tất cả <span class="tab-count">148</span>
+            </div>
+            <div class="tab green" data-tab="present">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Đã có mặt <span class="tab-count" id="tabPresent">87</span>
+            </div>
+            <div class="tab amber" data-tab="absent">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+              Chưa đến <span class="tab-count" id="tabAbsent">61</span>
+            </div>
+            <div class="tab" data-tab="late">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/></svg>
+              Đến muộn <span class="tab-count">9</span>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <div class="search-inline">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input placeholder="Tìm trong danh sách..." />
+            </div>
+            <button class="filter-chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/></svg>
+              Tất cả phòng ban
+            </button>
+            <button class="filter-chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5h10"/><path d="M11 9h7"/><path d="M11 13h4"/><path d="M3 17l3 3 3-3"/><path d="M6 18V4"/></svg>
+              Sắp xếp: A-Z
+            </button>
+            <div class="toolbar-right">
+              <button class="filter-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                In danh sách
+              </button>
+            </div>
+          </div>
+
+          <div class="attlist" id="attList">
+
+            <!-- Row 001: Checked in -->
+            <div class="att-row checked-in" data-status="present">
+              <div class="att-num">001</div>
+              <div class="att-user">
+                <div class="att-avatar av-2">LH
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Lê Thanh Hằng</div>
+                  <div class="att-info"><span class="dept-tag hr">Nhân sự</span><span class="mono">EMP-0673</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-pill">08:24</span></div>
+              <div class="toggle on" data-toggle></div>
+            </div>
+
+            <!-- Row 002: Checked in -->
+            <div class="att-row checked-in" data-status="present">
+              <div class="att-num">002</div>
+              <div class="att-user">
+                <div class="att-avatar av-5">PV
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Phạm Văn Quân</div>
+                  <div class="att-info"><span class="dept-tag fin">Tài chính</span><span class="mono">EMP-1108</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-pill">08:31</span></div>
+              <div class="toggle on" data-toggle></div>
+            </div>
+
+            <!-- Row 003: Checked in -->
+            <div class="att-row checked-in" data-status="present">
+              <div class="att-num">003</div>
+              <div class="att-user">
+                <div class="att-avatar av-3">BT
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Bùi Tuấn Anh</div>
+                  <div class="att-info"><span class="dept-tag it">Công nghệ thông tin</span><span class="mono">EMP-0301</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-pill">08:38</span></div>
+              <div class="toggle on" data-toggle></div>
+            </div>
+
+            <!-- Row 004: Not yet -->
+            <div class="att-row" data-status="absent">
+              <div class="att-num">004</div>
+              <div class="att-user">
+                <div class="att-avatar av-1">NA
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Nguyễn Phương Anh</div>
+                  <div class="att-info"><span class="dept-tag mkt">Marketing</span><span class="mono">EMP-1042</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-empty">— : —</span></div>
+              <div class="toggle" data-toggle></div>
+            </div>
+
+            <!-- Row 005: Checked in -->
+            <div class="att-row checked-in" data-status="present">
+              <div class="att-num">005</div>
+              <div class="att-user">
+                <div class="att-avatar av-5">TG
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Tạ Gia Hưng</div>
+                  <div class="att-info"><span class="dept-tag fin">Tài chính</span><span class="mono">EMP-0918</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-pill">08:42</span></div>
+              <div class="toggle on" data-toggle></div>
+            </div>
+
+            <!-- Row 006: Late check-in -->
+            <div class="att-row checked-in late" data-status="late">
+              <div class="att-num">006</div>
+              <div class="att-user">
+                <div class="att-avatar av-3">TM
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Trần Minh Đức</div>
+                  <div class="att-info"><span class="dept-tag it">Công nghệ thông tin</span><span class="mono">EMP-0287</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-pill att-time-late">09:14</span></div>
+              <div class="toggle on" data-toggle></div>
+            </div>
+
+            <!-- Row 007: Not yet -->
+            <div class="att-row" data-status="absent">
+              <div class="att-num">007</div>
+              <div class="att-user">
+                <div class="att-avatar av-6">HN
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Hoàng Nhật Linh</div>
+                  <div class="att-info"><span class="dept-tag ops">Vận hành</span><span class="mono">EMP-0451</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-empty">— : —</span></div>
+              <div class="toggle" data-toggle></div>
+            </div>
+
+            <!-- Row 008: Checked in -->
+            <div class="att-row checked-in" data-status="present">
+              <div class="att-num">008</div>
+              <div class="att-user">
+                <div class="att-avatar av-7">CK
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Chu Khánh Vy</div>
+                  <div class="att-info"><span class="dept-tag hr">Nhân sự</span><span class="mono">EMP-1567</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-pill">08:51</span></div>
+              <div class="toggle on" data-toggle></div>
+            </div>
+
+            <!-- Row 009: Not yet -->
+            <div class="att-row" data-status="absent">
+              <div class="att-num">009</div>
+              <div class="att-user">
+                <div class="att-avatar av-4">VN
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Vũ Ngọc Bảo</div>
+                  <div class="att-info"><span class="dept-tag partner">Đối tác ngoài</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-empty">— : —</span></div>
+              <div class="toggle" data-toggle></div>
+            </div>
+
+            <!-- Row 010: Late check-in -->
+            <div class="att-row checked-in late" data-status="late">
+              <div class="att-num">010</div>
+              <div class="att-user">
+                <div class="att-avatar av-1">DT
+                  <div class="check-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+                </div>
+                <div>
+                  <div class="att-name">Đặng Thu Trang</div>
+                  <div class="att-info"><span class="dept-tag mkt">Marketing</span><span class="mono">EMP-0892</span></div>
+                </div>
+              </div>
+              <div class="att-time"><span class="att-time-pill att-time-late">09:18</span></div>
+              <div class="toggle on" data-toggle></div>
+            </div>
+
+          </div>
+
+          <div class="panel-footer">
+            <div>Hiển thị <b>1 – 12</b> trong <b>148</b> người đã được duyệt</div>
+            <div class="pag-mini">
+              <button class="pag-mini-btn">Trước</button>
+              <span class="mono" style="color:var(--ink-soft);">Trang 1 / 13</span>
+              <button class="pag-mini-btn">Sau</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── RIGHT: SIDE COL ─── -->
+        <aside class="side-col">
+
+          <!-- LIVE FEED -->
+          <div class="feed-card">
+            <div class="feed-head">
+              <div class="feed-title">Hoạt động real-time</div>
+              <span class="feed-live">LIVE</span>
+            </div>
+            <div class="feed-list" id="feedList">
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#E89B3C,#B36F12);">DT</div>
+                <div class="feed-content">
+                  <div class="feed-name">Đặng Thu Trang</div>
+                  <div class="feed-meta">Marketing · vừa check-in</div>
+                </div>
+                <span class="feed-time late">09:18</span>
+              </div>
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#7B5CD6,#5A3FA8);">TM</div>
+                <div class="feed-content">
+                  <div class="feed-name">Trần Minh Đức</div>
+                  <div class="feed-meta">CNTT · 14 phút trước</div>
+                </div>
+                <span class="feed-time late">09:14</span>
+              </div>
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#3D6BB8,#2A4D86);">DN</div>
+                <div class="feed-content">
+                  <div class="feed-name">Đỗ Nam Khánh</div>
+                  <div class="feed-meta">Tài chính · 33 phút trước</div>
+                </div>
+                <span class="feed-time">08:55</span>
+              </div>
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#5DA679,#2E6B47);">CK</div>
+                <div class="feed-content">
+                  <div class="feed-name">Chu Khánh Vy</div>
+                  <div class="feed-meta">Nhân sự · 37 phút trước</div>
+                </div>
+                <span class="feed-time">08:51</span>
+              </div>
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#3D6BB8,#2A4D86);">TG</div>
+                <div class="feed-content">
+                  <div class="feed-name">Tạ Gia Hưng</div>
+                  <div class="feed-meta">Tài chính · 46 phút trước</div>
+                </div>
+                <span class="feed-time">08:42</span>
+              </div>
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#7B5CD6,#5A3FA8);">BT</div>
+                <div class="feed-content">
+                  <div class="feed-name">Bùi Tuấn Anh</div>
+                  <div class="feed-meta">CNTT · 50 phút trước</div>
+                </div>
+                <span class="feed-time">08:38</span>
+              </div>
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#3D6BB8,#2A4D86);">PV</div>
+                <div class="feed-content">
+                  <div class="feed-name">Phạm Văn Quân</div>
+                  <div class="feed-meta">Tài chính · 57 phút trước</div>
+                </div>
+                <span class="feed-time">08:31</span>
+              </div>
+              <div class="feed-item">
+                <div class="feed-avatar" style="background:linear-gradient(135deg,#2F8F5E,#1F6E45);">LH</div>
+                <div class="feed-content">
+                  <div class="feed-name">Lê Thanh Hằng</div>
+                  <div class="feed-meta">Nhân sự · 1 giờ trước</div>
+                </div>
+                <span class="feed-time">08:24</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DEPT PROGRESS -->
+          <div class="dept-card">
+            <div class="dept-card-title">Theo phòng ban</div>
+            <div class="dept-card-sub">Tỉ lệ có mặt theo bộ phận</div>
+
+            <div class="dept-bar it">
+              <div class="dept-bar-head">
+                <span class="dept-bar-name">Công nghệ thông tin</span>
+                <span class="dept-bar-value"><b>28</b> / 32 · 87%</span>
+              </div>
+              <div class="dept-bar-track"><div class="dept-bar-fill" style="width: 87%"></div></div>
+            </div>
+
+            <div class="dept-bar fin">
+              <div class="dept-bar-head">
+                <span class="dept-bar-name">Tài chính</span>
+                <span class="dept-bar-value"><b>22</b> / 26 · 84%</span>
+              </div>
+              <div class="dept-bar-track"><div class="dept-bar-fill" style="width: 84%"></div></div>
+            </div>
+
+            <div class="dept-bar mkt">
+              <div class="dept-bar-head">
+                <span class="dept-bar-name">Marketing</span>
+                <span class="dept-bar-value"><b>14</b> / 24 · 58%</span>
+              </div>
+              <div class="dept-bar-track"><div class="dept-bar-fill" style="width: 58%"></div></div>
+            </div>
+
+            <div class="dept-bar hr">
+              <div class="dept-bar-head">
+                <span class="dept-bar-name">Nhân sự</span>
+                <span class="dept-bar-value"><b>13</b> / 18 · 72%</span>
+              </div>
+              <div class="dept-bar-track"><div class="dept-bar-fill" style="width: 72%"></div></div>
+            </div>
+
+            <div class="dept-bar ops">
+              <div class="dept-bar-head">
+                <span class="dept-bar-name">Vận hành</span>
+                <span class="dept-bar-value"><b>10</b> / 22 · 45%</span>
+              </div>
+              <div class="dept-bar-track"><div class="dept-bar-fill" style="width: 45%"></div></div>
+            </div>
+          </div>
+
+          <button class="close-session">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Đóng phiên điểm danh
+          </button>
+
+        </aside>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<script>
+  // TABS — filter list
+  document.querySelectorAll('#tabs .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#tabs .tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.dataset.tab;
+      document.querySelectorAll('.att-row').forEach(row => {
+        if (filter === 'all') row.style.display = '';
+        else row.style.display = (row.dataset.status === filter) ? '' : 'none';
+      });
+    });
+  });
+
+  // TOGGLES — flip status + update counts
+  function getCurrentTime() {
+    const now = new Date();
+    return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  }
+
+  function updateCounts() {
+    const total = 148;
+    const visiblePresent = document.querySelectorAll('.att-row.checked-in').length;
+    // Use base counts + delta from visible toggling
+    document.getElementById('tabPresent').textContent = 87 + (visiblePresent - 7);
+    // (Simplified — not recalculating full 148 model)
+  }
+
+  document.querySelectorAll('[data-toggle]').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const row = toggle.closest('.att-row');
+      const isOn = toggle.classList.toggle('on');
+      const timeCell = row.querySelector('.att-time');
+
+      if (isOn) {
+        row.classList.add('checked-in');
+        row.dataset.status = 'present';
+        timeCell.innerHTML = `<span class="att-time-pill">${getCurrentTime()}</span>`;
+      } else {
+        row.classList.remove('checked-in', 'late');
+        row.dataset.status = 'absent';
+        timeCell.innerHTML = `<span class="att-time-empty">— : —</span>`;
+      }
+      updateCounts();
+    });
+  });
+
+  // QUICK SEARCH — Enter to auto check-in
+  const quickInput = document.getElementById('quickInput');
+  quickInput.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const q = quickInput.value.trim().toLowerCase();
+    if (!q) return;
+    const rows = document.querySelectorAll('.att-row');
+    for (const row of rows) {
+      const txt = row.textContent.toLowerCase();
+      if (txt.includes(q) && !row.classList.contains('checked-in')) {
+        const toggle = row.querySelector('[data-toggle]');
+        toggle.click();
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        row.style.transition = 'box-shadow 0.4s ease';
+        row.style.boxShadow = 'inset 0 0 0 2px var(--green)';
+        setTimeout(() => row.style.boxShadow = '', 1400);
+        quickInput.value = '';
+        return;
+      }
+    }
+    // not found
+    quickInput.parentElement.style.transition = 'border-color 0.2s, background 0.2s';
+    quickInput.parentElement.style.borderColor = 'var(--red)';
+    quickInput.parentElement.style.background = 'var(--red-soft)';
+    setTimeout(() => {
+      quickInput.parentElement.style.borderColor = 'var(--ink)';
+      quickInput.parentElement.style.background = '#FDFAF5';
+    }, 700);
+  });
+</script>
+</body>
+</html>

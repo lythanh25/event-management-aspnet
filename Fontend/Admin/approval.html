@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Xét duyệt đăng ký — EventHub Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F1ECE3;
+    --bg-deep: #E5DDD0;
+    --ink: #1A1410;
+    --ink-soft: #4A3F36;
+    --muted: #8A7E72;
+    --line: #E8DFD0;
+    --line-strong: #D8CDB9;
+    --card: #FFFFFF;
+    --sidebar: #15110D;
+    --amber: #E89B3C;
+    --amber-soft: #F5B96A;
+    --amber-bg: #FBF4E7;
+    --green: #2F8F5E;
+    --green-soft: #E2EFE7;
+    --red: #C84B3B;
+    --red-soft: #FBECE9;
+    --blue: #5B7CC4;
+    --blue-soft: #E2E8F4;
+    --purple: #8E7FBE;
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button, a { font: inherit; }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: 'Geist Mono', monospace; }
+
+  /* ─── LAYOUT ─── */
+  .app {
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR (same as other pages) ─── */
+  .sidebar {
+    background: var(--sidebar);
+    color: #C9BFB1;
+    padding: 22px 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 8px 22px;
+    border-bottom: 1px solid #2A241D;
+    margin-bottom: 16px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, var(--amber-soft), var(--amber));
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(232,155,60,0.25);
+  }
+  .brand-mark svg { width: 17px; height: 17px; stroke: #1A1410; }
+  .brand-name { color: #fff; font-weight: 600; font-size: 14.5px; line-height: 1.2; }
+  .brand-sub { color: #6B5F52; font-size: 11px; margin-top: 1px; }
+
+  .nav-group-label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #5A5046; padding: 12px 10px 6px; font-weight: 500;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 10px;
+    border-radius: 7px;
+    color: #B5AB9D;
+    font-size: 13px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .nav-item svg { width: 17px; height: 17px; stroke: currentColor; opacity: 0.85; flex-shrink: 0; }
+  .nav-item:hover { background: #1F1A14; color: #fff; }
+  .nav-item.active {
+    background: linear-gradient(180deg, rgba(232,155,60,0.18), rgba(232,155,60,0.10));
+    color: #F4D9A8;
+    box-shadow: inset 0 0 0 1px rgba(232,155,60,0.15);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -14px; top: 8px; bottom: 8px;
+    width: 3px; background: var(--amber);
+    border-radius: 0 3px 3px 0;
+  }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red); color: #fff;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 999px;
+    line-height: 1.4;
+  }
+  .nav-item.active .nav-badge { background: var(--amber); color: #1A1410; }
+  .nav-spacer { flex: 1; }
+  .logout {
+    display: flex; align-items: center; gap: 11px;
+    padding: 10px;
+    border-top: 1px solid #2A241D;
+    color: #8A7E70; font-size: 13px;
+    cursor: pointer; margin-top: 8px;
+  }
+  .logout:hover { color: #fff; }
+  .logout svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  /* ─── MAIN ─── */
+  .main { display: flex; flex-direction: column; min-width: 0; }
+
+  /* topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--muted);
+  }
+  .breadcrumb .sep { opacity: 0.5; }
+  .breadcrumb .current { color: var(--ink); font-weight: 500; }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 12px;
+    margin-left: auto;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 7px 12px;
+    width: 280px;
+    color: var(--muted);
+  }
+  .search-box svg { width: 14px; height: 14px; stroke: currentColor; flex-shrink: 0; }
+  .search-box input {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font-size: 13px; color: var(--ink);
+  }
+  .search-box input::placeholder { color: var(--muted); }
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    display: grid; place-items: center;
+    color: var(--ink-soft);
+    cursor: pointer; position: relative;
+  }
+  .icon-btn:hover { border-color: var(--line-strong); }
+  .icon-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+  .icon-btn .dot {
+    position: absolute; top: 8px; right: 8px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 0 2px var(--card);
+  }
+  .avatar-sm {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #2A241D, var(--ink));
+    display: grid; place-items: center;
+    color: #F5EFE6; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  .avatar-sm svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  /* ─── PAGE ─── */
+  .page { padding: 24px 32px 60px; max-width: 1480px; width: 100%; }
+
+  /* page head */
+  .page-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; margin-bottom: 22px;
+  }
+  .page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .page-sub {
+    color: var(--muted); font-size: 13px; margin-top: 6px;
+    max-width: 720px;
+  }
+  .page-sub b { color: var(--ink-soft); font-weight: 600; }
+
+  .head-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 15px;
+    border-radius: 9px;
+    font-weight: 500; font-size: 13px;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.18s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn svg { width: 14px; height: 14px; stroke: currentColor; }
+  .btn-ghost { background: var(--card); border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--line-strong); }
+  .btn-primary { background: var(--ink); color: #fff; }
+  .btn-primary:hover { background: #2A241D; }
+
+  /* ═════════ URGENT HERO ═════════ */
+  .urgent-hero {
+    background:
+      radial-gradient(circle at 88% 8%, rgba(232,155,60,0.22), transparent 55%),
+      radial-gradient(circle at 5% 95%, rgba(200,75,59,0.10), transparent 50%),
+      linear-gradient(135deg, #1A1410 0%, #2A241D 60%, #3A2A1C 100%);
+    color: #F5EFE6;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .urgent-hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent 0 28px, rgba(255,255,255,0.012) 28px 29px);
+    pointer-events: none;
+  }
+  .urgent-hero-left { position: relative; z-index: 1; min-width: 0; }
+  .urgent-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 12px;
+    background: rgba(232, 155, 60, 0.15);
+    border: 1px solid rgba(232, 155, 60, 0.4);
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #F4D9A8;
+    margin-bottom: 14px;
+  }
+  .urgent-pill::before {
+    content: '';
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #E89B3C;
+    box-shadow: 0 0 0 0 rgba(232,155,60,0.6);
+    animation: urgentpulse 1.6s ease-in-out infinite;
+  }
+  @keyframes urgentpulse {
+    0% { box-shadow: 0 0 0 0 rgba(232,155,60,0.6); }
+    70% { box-shadow: 0 0 0 8px rgba(232,155,60,0); }
+    100% { box-shadow: 0 0 0 0 rgba(232,155,60,0); }
+  }
+  .urgent-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 30px;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: #fff;
+    margin-bottom: 14px;
+  }
+  .urgent-meta {
+    display: flex; flex-wrap: wrap; gap: 22px;
+    color: #C9BFB1; font-size: 12.5px;
+    margin-bottom: 20px;
+  }
+  .urgent-meta > div { display: inline-flex; align-items: center; gap: 7px; }
+  .urgent-meta svg { width: 13px; height: 13px; stroke: #8B7E6F; }
+  .urgent-meta strong { color: #F4D9A8; font-weight: 500; }
+
+  .urgent-stats {
+    display: flex; align-items: stretch; gap: 30px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .urgent-stat-item { min-width: 80px; }
+  .urgent-stat-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px; line-height: 1;
+    color: #fff;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .urgent-stat-num small {
+    font-family: 'Geist', sans-serif;
+    font-size: 12px; color: #8B7E6F; font-weight: 400;
+  }
+  .urgent-stat-num.amber { color: var(--amber); }
+  .urgent-stat-num.red { color: #FFA89A; }
+  .urgent-stat-lbl {
+    font-size: 10.5px; color: #8B7E6F;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-top: 6px;
+  }
+  .urgent-stat-trend {
+    margin-top: 4px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px; color: #FFA89A;
+  }
+
+  .urgent-hero-right {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; gap: 10px;
+    min-width: 240px;
+  }
+  .btn-urgent {
+    background: linear-gradient(135deg, var(--amber-soft), var(--amber));
+    color: #1A1410; border: 0;
+    padding: 13px 18px;
+    border-radius: 11px;
+    font-size: 13.5px; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 6px 18px rgba(232,155,60,0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-urgent:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(232,155,60,0.4); }
+  .btn-urgent svg { width: 15px; height: 15px; stroke: currentColor; }
+  .btn-urgent-count {
+    background: rgba(26,20,16,0.18);
+    color: #1A1410;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    margin-left: 2px;
+  }
+  .btn-urgent-secondary {
+    background: rgba(255,255,255,0.06);
+    color: #F4D9A8;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 11px 16px;
+    border-radius: 11px;
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-urgent-secondary:hover { background: rgba(255,255,255,0.12); }
+  .btn-urgent-secondary svg { width: 14px; height: 14px; stroke: currentColor; }
+
+  /* ═════════ STATS STRIP ═════════ */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .stat-card-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .stat-icon-box {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .stat-icon-box.amber { background: var(--amber-bg); color: #B36F12; }
+  .stat-icon-box.dark { background: var(--bg-deep); color: var(--ink); }
+  .stat-icon-box.green { background: var(--green-soft); color: var(--green); }
+  .stat-icon-box.red { background: var(--red-soft); color: var(--red); }
+  .stat-icon-box svg { width: 14px; height: 14px; stroke: currentColor; }
+
+  .stat-card-value {
+    font-size: 28px; font-weight: 700;
+    color: var(--ink); line-height: 1;
+    letter-spacing: -0.02em;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .stat-card-value em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--amber);
+    font-size: 28px;
+    margin-left: 1px;
+  }
+  .stat-card-value small {
+    font-family: 'Geist', sans-serif;
+    font-size: 12px; color: var(--muted);
+    font-weight: 500;
+  }
+  .stat-card-trend {
+    margin-top: 10px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px; color: var(--muted);
+  }
+  .stat-card-trend.red { color: var(--red); }
+  .stat-card-trend.green { color: var(--green); }
+
+  /* ═════════ FILTER BAR ═════════ */
+  .filter-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .filter-tab {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 13px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-soft);
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-tab:hover { border-color: var(--line-strong); }
+  .filter-tab.active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .filter-tab svg { width: 13px; height: 13px; stroke: currentColor; }
+  .filter-tab .count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    background: var(--bg-deep);
+    color: var(--ink-soft);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .filter-tab.active .count { background: rgba(255,255,255,0.15); color: #fff; }
+  .filter-tab .count.hot { background: var(--red); color: #fff; }
+
+  .filter-spacer { flex: 1; }
+
+  .filter-search-inline {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 7px 12px;
+    background: var(--card);
+    width: 240px;
+    color: var(--muted);
+  }
+  .filter-search-inline svg { width: 13px; height: 13px; stroke: currentColor; }
+  .filter-search-inline input {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font-size: 12.5px; color: var(--ink);
+  }
+
+  /* ═════════ SECTIONS ═════════ */
+  .section { margin-bottom: 30px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 0 4px;
+  }
+  .section-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title em { font-style: italic; }
+  .section-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    background: var(--bg-deep);
+    color: var(--ink-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .section-tag.hot { background: var(--red); color: #fff; }
+
+  .section-link {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .section-link:hover { color: var(--ink); }
+  .section-link svg { width: 13px; height: 13px; stroke: currentColor; }
+
+  /* ═════════ EVENT GRID ═════════ */
+  .event-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .event-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px rgba(26,20,16,0.08);
+    border-color: var(--line-strong);
+  }
+  .event-card.has-pending {
+    border-color: rgba(232, 155, 60, 0.3);
+  }
+  .event-card.has-pending::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 14px; right: 14px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber-soft), var(--amber));
+    border-radius: 0 0 3px 3px;
+    z-index: 2;
+  }
+
+  .event-banner {
+    aspect-ratio: 16/8;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: flex-end;
+    padding: 12px;
+  }
+  .event-banner.bg-1 { background: linear-gradient(135deg, #2A241D 0%, #4A3A2A 40%, #8C5A2C 75%, #E89B3C 100%); }
+  .event-banner.bg-2 { background: linear-gradient(135deg, #3A2D1F 0%, #6B5530 50%, #A89060 100%); }
+  .event-banner.bg-3 { background: linear-gradient(135deg, #2A2440 0%, #4A3F76 50%, #7B5CD6 100%); }
+  .event-banner.bg-4 { background: linear-gradient(135deg, #1F3A56 0%, #3D6BB8 50%, #6B95DB 100%); }
+  .event-banner.bg-5 { background: linear-gradient(135deg, #4A2A24 0%, #8F4438 50%, #C84B3B 100%); }
+  .event-banner.bg-6 { background: linear-gradient(135deg, #1F4A3A 0%, #2F6E55 50%, #4FAF7B 100%); }
+  .event-banner::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 30%, rgba(255,255,255,0.18), transparent 50%);
+  }
+
+  /* time badge top right */
+  .event-time-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-align: center;
+    color: var(--ink);
+    z-index: 2;
+  }
+  .event-time-day {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px; line-height: 1;
+    font-style: italic; color: var(--ink);
+  }
+  .event-time-mon {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 2px; font-weight: 500;
+  }
+
+  .event-banner-tag {
+    position: relative;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.05em;
+  }
+
+  .event-body {
+    padding: 14px 18px 12px;
+    flex: 1;
+    display: flex; flex-direction: column;
+  }
+  .event-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .event-meta {
+    display: flex; flex-direction: column; gap: 5px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .event-meta > div { display: flex; align-items: center; gap: 7px; }
+  .event-meta svg { width: 12px; height: 12px; stroke: var(--muted); flex-shrink: 0; }
+  .event-meta-deadline { color: #B36F12; font-weight: 500; }
+  .event-meta-deadline svg { stroke: var(--amber); }
+
+  /* registration progress */
+  .reg-progress {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .reg-progress-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 7px;
+    font-size: 11px;
+  }
+  .reg-progress-lbl { color: var(--muted); }
+  .reg-progress-val {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px; font-weight: 600;
+    color: var(--ink);
+  }
+  .reg-progress-val small { color: var(--muted); font-weight: 400; }
+  .reg-progress-bar {
+    height: 5px;
+    background: var(--bg-deep);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+  }
+  .reg-progress-bar .approved {
+    background: linear-gradient(90deg, #4FAF7B, var(--green));
+    height: 100%;
+  }
+  .reg-progress-bar .pending {
+    background: repeating-linear-gradient(45deg,
+      var(--amber) 0 4px,
+      #F5C97D 4px 8px);
+    height: 100%;
+  }
+  .reg-progress-legend {
+    display: flex; gap: 12px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .reg-progress-legend > span {
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .reg-progress-legend > span::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 2px;
+  }
+  .reg-progress-legend .leg-approved::before { background: var(--green); }
+  .reg-progress-legend .leg-pending::before { background: var(--amber); }
+  .reg-progress-legend .leg-empty::before { background: var(--bg-deep); border: 1px solid var(--line-strong); }
+  .reg-progress-legend .leg-full { color: var(--red); }
+
+  /* recent activity strip */
+  .recent-activity {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 11px;
+    background: #FDFAF5;
+    border: 1px dashed var(--line);
+    border-radius: 7px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 0;
+  }
+  .recent-activity svg {
+    width: 12px; height: 12px;
+    stroke: var(--green);
+    flex-shrink: 0;
+  }
+  .recent-activity.warn svg { stroke: var(--amber); }
+  .recent-activity.info svg { stroke: var(--blue); }
+  .recent-activity b { color: var(--ink); font-weight: 600; }
+  .recent-activity .ago {
+    margin-left: auto;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  /* footer */
+  .event-footer {
+    padding: 10px 18px 14px;
+    background: #FDFAF5;
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .event-action {
+    flex: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 7px;
+    padding: 10px;
+    border-radius: 9px;
+    font-size: 12.5px; font-weight: 600;
+    cursor: pointer; border: 0;
+    transition: all 0.15s ease;
+  }
+  .event-action.urgent {
+    background: linear-gradient(135deg, var(--amber-soft), var(--amber));
+    color: #1A1410;
+    box-shadow: 0 4px 12px rgba(232,155,60,0.25);
+  }
+  .event-action.urgent:hover { transform: translateY(-1px); }
+  .event-action.urgent .badge-num {
+    background: rgba(26,20,16,0.18);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    margin-left: 2px;
+  }
+  .event-action.ghost {
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .event-action.ghost:hover { background: var(--bg); border-color: var(--line-strong); }
+  .event-action.ghost svg { width: 13px; height: 13px; stroke: currentColor; }
+  .event-action-icon {
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .event-action-icon:hover { background: var(--bg); }
+  .event-action-icon svg { width: 14px; height: 14px; stroke: currentColor; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1200px) {
+    .event-grid { grid-template-columns: repeat(2, 1fr); }
+    .urgent-hero { grid-template-columns: 1fr; }
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 780px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .topbar { padding: 14px 20px; }
+    .page { padding: 20px; }
+    .event-grid { grid-template-columns: 1fr; }
+    .stats-strip { grid-template-columns: 1fr; }
+    .urgent-stats { flex-wrap: wrap; gap: 18px; }
+    .page-title { font-size: 26px; }
+    .urgent-title { font-size: 22px; }
+    .page-head { flex-direction: column; align-items: stretch; }
+    .search-box { width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="3"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">EventHub</div>
+        <div class="brand-sub">Admin Panel</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Tổng quan</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+
+    <div class="nav-group-label">Quản lý</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Quản lý Sự kiện
+    </a>
+    <a class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Xét duyệt đăng ký
+      <span class="nav-badge">52</span>
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
+      Điểm danh
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Quản lý Người dùng
+    </a>
+
+    <div class="nav-group-label">Hệ thống</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Cài đặt
+    </a>
+
+    <div class="nav-spacer"></div>
+    <div class="logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Đăng xuất
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main">
+
+    <!-- topbar -->
+    <header class="topbar">
+      <div class="breadcrumb">
+        <span>Admin</span>
+        <span class="sep">›</span>
+        <span class="current">Xét duyệt đăng ký</span>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Tìm kiếm sự kiện, người dùng..." />
+        </div>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="page">
+
+      <!-- ─── PAGE HEAD ─── -->
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Xét duyệt đăng ký</h1>
+          <div class="page-sub">
+            <b>52 yêu cầu</b> đang chờ xử lý trên <b>6 sự kiện</b>. Hệ thống ưu tiên hiển thị các sự kiện có yêu cầu lâu nhất chưa xử lý.
+          </div>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            Cài đặt nhắc nhở
+          </button>
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
+            Duyệt nhanh tất cả
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── URGENT HERO ─── -->
+      <div class="urgent-hero">
+        <div class="urgent-hero-left">
+          <span class="urgent-pill">CẦN XỬ LÝ NGAY</span>
+          <h2 class="urgent-title">Hội thảo Chuyển đổi Số 2025 — đang chờ duyệt</h2>
+          <div class="urgent-meta">
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Sự kiện: <strong>22 / 04 / 2025</strong>
+            </div>
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+              Hạn đăng ký: <strong>còn 2 ngày</strong>
+            </div>
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Hội trường A, TT Hội nghị Quốc gia
+            </div>
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Phụ trách: <strong>Anh Hoàng</strong>
+            </div>
+          </div>
+
+          <div class="urgent-stats">
+            <div class="urgent-stat-item">
+              <div class="urgent-stat-num amber">24</div>
+              <div class="urgent-stat-lbl">Đang chờ duyệt</div>
+            </div>
+            <div class="urgent-stat-item">
+              <div class="urgent-stat-num">148 <small>/ 200</small></div>
+              <div class="urgent-stat-lbl">Đã duyệt</div>
+            </div>
+            <div class="urgent-stat-item">
+              <div class="urgent-stat-num red">26<small>h</small></div>
+              <div class="urgent-stat-lbl">Yêu cầu cũ nhất</div>
+              <div class="urgent-stat-trend">⚠ Đã quá 24 giờ</div>
+            </div>
+            <div class="urgent-stat-item">
+              <div class="urgent-stat-num">+6</div>
+              <div class="urgent-stat-lbl">Trong 24h qua</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="urgent-hero-right">
+          <button class="btn-urgent">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Xét duyệt ngay
+            <span class="btn-urgent-count">24</span>
+            <svg style="margin-left:6px" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          </button>
+          <button class="btn-urgent-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
+            Duyệt tự động (theo phòng ban)
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── STATS STRIP ─── -->
+      <div class="stats-strip">
+        <div class="stat-card">
+          <div class="stat-card-head">
+            <div class="stat-icon-box amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            </div>
+            Tổng yêu cầu chờ
+          </div>
+          <div class="stat-card-value">52</div>
+          <div class="stat-card-trend red">↑ +8 trong 24h</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-head">
+            <div class="stat-icon-box dark">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            Sự kiện cần xử lý
+          </div>
+          <div class="stat-card-value">6</div>
+          <div class="stat-card-trend">2 sắp hết hạn</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-head">
+            <div class="stat-icon-box green">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+            </div>
+            Đã duyệt 7 ngày
+          </div>
+          <div class="stat-card-value">487</div>
+          <div class="stat-card-trend green">92% tỉ lệ duyệt</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-head">
+            <div class="stat-icon-box red">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+            </div>
+            Thời gian xử lý TB
+          </div>
+          <div class="stat-card-value">3.2 <em>h</em></div>
+          <div class="stat-card-trend">↓ Nhanh hơn 18% tháng trước</div>
+        </div>
+      </div>
+
+      <!-- ─── FILTER BAR ─── -->
+      <div class="filter-bar">
+        <button class="filter-tab active">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>
+          Cần xử lý ngay
+          <span class="count hot">3</span>
+        </button>
+        <button class="filter-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+          Đang mở đăng ký
+          <span class="count">8</span>
+        </button>
+        <button class="filter-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Sắp đầy chỗ
+          <span class="count">4</span>
+        </button>
+        <button class="filter-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21,8 21,21 3,21 3,8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          Đã đóng
+          <span class="count">37</span>
+        </button>
+        <div class="filter-spacer"></div>
+        <div class="filter-search-inline">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Tìm sự kiện..." />
+        </div>
+        <button class="filter-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5h10"/><path d="M11 9h7"/><path d="M11 13h4"/><path d="M3 17l3 3 3-3"/><path d="M6 18V4"/></svg>
+          Sắp xếp
+        </button>
+      </div>
+
+      <!-- ═════════ URGENT SECTION ═════════ -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--red);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Cần xử lý <em>ngay</em>
+            <span class="section-tag hot">3 SỰ KIỆN</span>
+          </div>
+        </div>
+
+        <div class="event-grid">
+
+          <!-- URGENT 1 -->
+          <div class="event-card has-pending">
+            <div class="event-banner bg-1">
+              <div class="event-time-badge">
+                <div class="event-time-day">22</div>
+                <div class="event-time-mon">THG 4</div>
+              </div>
+              <span class="event-banner-tag">HỘI NGHỊ • OFFLINE</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Hội thảo Chuyển đổi Số 2025</h3>
+              <div class="event-meta">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  22 / 04 / 2025 · 08:30 – 17:00
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Hội trường A, TT Hội nghị Quốc gia
+                </div>
+                <div class="event-meta-deadline">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+                  Hạn đăng ký: còn 2 ngày 14 giờ
+                </div>
+              </div>
+
+              <div class="reg-progress">
+                <div class="reg-progress-head">
+                  <span class="reg-progress-lbl">NĂNG LỰC 200 NGƯỜI</span>
+                  <span class="reg-progress-val">172 <small>/ 200 · 86%</small></span>
+                </div>
+                <div class="reg-progress-bar">
+                  <div class="approved" style="width: 74%"></div>
+                  <div class="pending" style="width: 12%"></div>
+                </div>
+                <div class="reg-progress-legend">
+                  <span class="leg-approved">148 đã duyệt</span>
+                  <span class="leg-pending">24 chờ</span>
+                  <span class="leg-empty">28 còn lại</span>
+                </div>
+              </div>
+
+              <div class="recent-activity">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                <span><b>Nguyễn Phương Anh</b> vừa đăng ký</span>
+                <span class="ago">2 phút trước</span>
+              </div>
+            </div>
+            <div class="event-footer">
+              <button class="event-action urgent">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Xét duyệt
+                <span class="badge-num">24</span>
+              </button>
+              <button class="event-action-icon" title="Chi tiết">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- URGENT 2 -->
+          <div class="event-card has-pending">
+            <div class="event-banner bg-2">
+              <div class="event-time-badge">
+                <div class="event-time-day">25</div>
+                <div class="event-time-mon">THG 4</div>
+              </div>
+              <span class="event-banner-tag">TEAM BUILDING</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Team Building Q2/2025 — Hành trình Tam Đảo</h3>
+              <div class="event-meta">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  25 / 04 / 2025 · cả ngày
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Resort Belvedere, Tam Đảo
+                </div>
+                <div class="event-meta-deadline">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+                  Hạn đăng ký: còn 18 giờ
+                </div>
+              </div>
+
+              <div class="reg-progress">
+                <div class="reg-progress-head">
+                  <span class="reg-progress-lbl">NĂNG LỰC 200 NGƯỜI</span>
+                  <span class="reg-progress-val">198 <small>/ 200 · 99%</small></span>
+                </div>
+                <div class="reg-progress-bar">
+                  <div class="approved" style="width: 92%"></div>
+                  <div class="pending" style="width: 7%"></div>
+                </div>
+                <div class="reg-progress-legend">
+                  <span class="leg-approved">184 đã duyệt</span>
+                  <span class="leg-pending">14 chờ</span>
+                  <span class="leg-empty">2 còn lại</span>
+                </div>
+              </div>
+
+              <div class="recent-activity warn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Sắp đầy chỗ — cần ưu tiên duyệt</span>
+                <span class="ago">CẢNH BÁO</span>
+              </div>
+            </div>
+            <div class="event-footer">
+              <button class="event-action urgent">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Xét duyệt
+                <span class="badge-num">14</span>
+              </button>
+              <button class="event-action-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- URGENT 3 -->
+          <div class="event-card has-pending">
+            <div class="event-banner bg-3">
+              <div class="event-time-badge">
+                <div class="event-time-day">28</div>
+                <div class="event-time-mon">THG 4</div>
+              </div>
+              <span class="event-banner-tag">NETWORKING</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Networking Coffee #5 — Marketing & Sales</h3>
+              <div class="event-meta">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  28 / 04 / 2025 · 17:30 – 19:00
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Sky Lounge — Tầng 21
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+                  Hạn đăng ký: còn 4 ngày
+                </div>
+              </div>
+
+              <div class="reg-progress">
+                <div class="reg-progress-head">
+                  <span class="reg-progress-lbl">NĂNG LỰC 50 NGƯỜI</span>
+                  <span class="reg-progress-val">50 <small>/ 50 · 100%</small></span>
+                </div>
+                <div class="reg-progress-bar">
+                  <div class="approved" style="width: 84%"></div>
+                  <div class="pending" style="width: 16%"></div>
+                </div>
+                <div class="reg-progress-legend">
+                  <span class="leg-approved">42 đã duyệt</span>
+                  <span class="leg-pending">8 chờ</span>
+                  <span class="leg-full">⚠ Hết chỗ</span>
+                </div>
+              </div>
+
+              <div class="recent-activity info">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+                <span>2 yêu cầu sẽ vào danh sách chờ</span>
+                <span class="ago">25 phút trước</span>
+              </div>
+            </div>
+            <div class="event-footer">
+              <button class="event-action urgent">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Xét duyệt
+                <span class="badge-num">8</span>
+              </button>
+              <button class="event-action-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═════════ OPEN SECTION ═════════ -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--ink-soft);"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            Đang <em>mở đăng ký</em>
+            <span class="section-tag">CÒN HẠN</span>
+          </div>
+          <a class="section-link">
+            Xem tất cả
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          </a>
+        </div>
+
+        <div class="event-grid">
+
+          <!-- OPEN 1 -->
+          <div class="event-card has-pending">
+            <div class="event-banner bg-4">
+              <div class="event-time-badge">
+                <div class="event-time-day">24</div>
+                <div class="event-time-mon">THG 4</div>
+              </div>
+              <span class="event-banner-tag">WORKSHOP • HYBRID</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Workshop AI cho Marketing — Cấp độ cơ bản</h3>
+              <div class="event-meta">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  24 / 04 / 2025 · 09:00 – 12:00
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Phòng C1 + Zoom
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+                  Hạn đăng ký: còn 1 ngày 6 giờ
+                </div>
+              </div>
+
+              <div class="reg-progress">
+                <div class="reg-progress-head">
+                  <span class="reg-progress-lbl">NĂNG LỰC 40 NGƯỜI</span>
+                  <span class="reg-progress-val">40 <small>/ 40 · 100%</small></span>
+                </div>
+                <div class="reg-progress-bar">
+                  <div class="approved" style="width: 90%"></div>
+                  <div class="pending" style="width: 10%"></div>
+                </div>
+                <div class="reg-progress-legend">
+                  <span class="leg-approved">36 đã duyệt</span>
+                  <span class="leg-pending">4 chờ</span>
+                  <span class="leg-full">⚠ Hết chỗ</span>
+                </div>
+              </div>
+
+              <div class="recent-activity">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                <span><b>Phan Lan Phương</b> vừa đăng ký</span>
+                <span class="ago">12 phút trước</span>
+              </div>
+            </div>
+            <div class="event-footer">
+              <button class="event-action urgent">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Xét duyệt
+                <span class="badge-num">4</span>
+              </button>
+              <button class="event-action-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- OPEN 2 -->
+          <div class="event-card has-pending">
+            <div class="event-banner bg-5">
+              <div class="event-time-badge">
+                <div class="event-time-day">27</div>
+                <div class="event-time-mon">THG 4</div>
+              </div>
+              <span class="event-banner-tag">ĐÀO TẠO • ONLINE</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Đào tạo An toàn thông tin — Bắt buộc Q2</h3>
+              <div class="event-meta">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  27 / 04 / 2025 · 14:00 – 16:30
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Microsoft Teams
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+                  Hạn đăng ký: còn 4 ngày
+                </div>
+              </div>
+
+              <div class="reg-progress">
+                <div class="reg-progress-head">
+                  <span class="reg-progress-lbl">NĂNG LỰC 800 NGƯỜI</span>
+                  <span class="reg-progress-val">514 <small>/ 800 · 64%</small></span>
+                </div>
+                <div class="reg-progress-bar">
+                  <div class="approved" style="width: 64%"></div>
+                  <div class="pending" style="width: 0.3%"></div>
+                </div>
+                <div class="reg-progress-legend">
+                  <span class="leg-approved">512 đã duyệt</span>
+                  <span class="leg-pending">2 chờ</span>
+                  <span class="leg-empty">286 còn lại</span>
+                </div>
+              </div>
+
+              <div class="recent-activity">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                <span><b>Đỗ Nam Khánh</b> vừa đăng ký</span>
+                <span class="ago">1 giờ trước</span>
+              </div>
+            </div>
+            <div class="event-footer">
+              <button class="event-action urgent">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Xét duyệt
+                <span class="badge-num">2</span>
+              </button>
+              <button class="event-action-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- OPEN 3 - no pending -->
+          <div class="event-card">
+            <div class="event-banner bg-6">
+              <div class="event-time-badge">
+                <div class="event-time-day">02</div>
+                <div class="event-time-mon">THG 5</div>
+              </div>
+              <span class="event-banner-tag">HỘI NGHỊ • OFFLINE</span>
+            </div>
+            <div class="event-body">
+              <h3 class="event-title">Hội nghị Đối tác chiến lược Q2</h3>
+              <div class="event-meta">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  02 / 05 / 2025 · 14:00 – 18:00
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Khách sạn Pan Pacific Hà Nội
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+                  Hạn đăng ký: còn 9 ngày
+                </div>
+              </div>
+
+              <div class="reg-progress">
+                <div class="reg-progress-head">
+                  <span class="reg-progress-lbl">NĂNG LỰC 80 NGƯỜI</span>
+                  <span class="reg-progress-val">36 <small>/ 80 · 45%</small></span>
+                </div>
+                <div class="reg-progress-bar">
+                  <div class="approved" style="width: 45%"></div>
+                </div>
+                <div class="reg-progress-legend">
+                  <span class="leg-approved">36 đã duyệt</span>
+                  <span class="leg-empty">44 còn lại</span>
+                </div>
+              </div>
+
+              <div class="recent-activity" style="background: var(--green-soft); border-color: #C9E5D4; color: var(--green);">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+                <span style="color: var(--green); font-weight: 500;">Tất cả đã được xử lý</span>
+                <span class="ago" style="color: var(--green);">CẬP NHẬT</span>
+              </div>
+            </div>
+            <div class="event-footer">
+              <button class="event-action ghost">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Xem danh sách
+              </button>
+              <button class="event-action-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<script>
+  // FILTER TABS
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      if (tab.querySelector('.count')) {
+        document.querySelectorAll('.filter-tab').forEach(t => {
+          if (t.querySelector('.count')) t.classList.remove('active');
+        });
+        tab.classList.add('active');
+      }
+    });
+  });
+
+  // EVENT CARD click feedback
+  document.querySelectorAll('.event-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.event-action, .event-action-icon')) return;
+      card.style.transform = 'translateY(-1px) scale(0.99)';
+      setTimeout(() => card.style.transform = '', 150);
+    });
+  });
+</script>
+</body>
+</html>

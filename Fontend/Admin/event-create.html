@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tạo sự kiện mới — EventHub Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F1ECE3;
+    --bg-deep: #E5DDD0;
+    --ink: #1A1410;
+    --ink-soft: #4A3F36;
+    --muted: #8A7E72;
+    --line: #E8DFD0;
+    --line-strong: #D8CDB9;
+    --card: #FFFFFF;
+    --sidebar: #15110D;
+    --amber: #E89B3C;
+    --amber-soft: #F5B96A;
+    --amber-bg: #FBF4E7;
+    --green: #2F8F5E;
+    --green-soft: #E2EFE7;
+    --red: #C84B3B;
+    --red-soft: #FBECE9;
+    --blue: #5B7CC4;
+    --blue-soft: #E2E8F4;
+    --purple: #8E7FBE;
+    --purple-soft: #ECE7F5;
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button, a, input, textarea, select { font: inherit; }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: 'Geist Mono', monospace; }
+
+  /* ─── LAYOUT ─── */
+  .app {
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    background: var(--sidebar);
+    color: #C9BFB1;
+    padding: 22px 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 8px 22px;
+    border-bottom: 1px solid #2A241D;
+    margin-bottom: 16px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, var(--amber-soft), var(--amber));
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(232,155,60,0.25);
+  }
+  .brand-mark svg { width: 17px; height: 17px; stroke: #1A1410; }
+  .brand-name { color: #fff; font-weight: 600; font-size: 14.5px; line-height: 1.2; }
+  .brand-sub { color: #6B5F52; font-size: 11px; margin-top: 1px; }
+
+  .nav-group-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #5A5046;
+    padding: 12px 10px 6px;
+    font-weight: 500;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 10px;
+    border-radius: 7px;
+    color: #B5AB9D;
+    font-size: 13px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .nav-item svg { width: 17px; height: 17px; stroke: currentColor; opacity: 0.85; flex-shrink: 0; }
+  .nav-item:hover { background: #1F1A14; color: #fff; }
+  .nav-item.active {
+    background: linear-gradient(180deg, rgba(232,155,60,0.18), rgba(232,155,60,0.10));
+    color: #F4D9A8;
+    box-shadow: inset 0 0 0 1px rgba(232,155,60,0.15);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -14px; top: 8px; bottom: 8px;
+    width: 3px;
+    background: var(--amber);
+    border-radius: 0 3px 3px 0;
+  }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    line-height: 1.4;
+  }
+  .nav-spacer { flex: 1; }
+  .logout {
+    display: flex; align-items: center; gap: 11px;
+    padding: 10px;
+    border-top: 1px solid #2A241D;
+    color: #8A7E70;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .logout:hover { color: #fff; }
+  .logout svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  /* ─── MAIN ─── */
+  .main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+  }
+
+  /* topbar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .breadcrumb .sep { opacity: 0.5; }
+  .breadcrumb .current { color: var(--ink); font-weight: 500; }
+  .breadcrumb a { color: var(--muted); cursor: pointer; }
+  .breadcrumb a:hover { color: var(--ink-soft); }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 12px;
+    margin-left: auto;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 7px 12px;
+    width: 280px;
+    color: var(--muted);
+  }
+  .search-box svg { width: 14px; height: 14px; stroke: currentColor; flex-shrink: 0; }
+  .search-box input { flex: 1; border: 0; outline: 0; background: transparent; font-size: 13px; color: var(--ink); }
+  .search-box input::placeholder { color: var(--muted); }
+
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    display: grid; place-items: center;
+    color: var(--ink-soft);
+    cursor: pointer;
+    position: relative;
+  }
+  .icon-btn:hover { border-color: var(--line-strong); }
+  .icon-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+  .icon-btn .dot {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 0 2px var(--card);
+  }
+  .avatar-sm {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #2A241D, var(--ink));
+    display: grid; place-items: center;
+    color: #F5EFE6;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .avatar-sm svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  /* ─── PAGE ─── */
+  .page {
+    padding: 24px 32px 100px;
+    max-width: 1480px;
+    width: 100%;
+  }
+
+  /* ─── PAGE HEAD ─── */
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .page-title em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--amber);
+    margin-left: 4px;
+    font-size: 36px;
+  }
+  .page-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .page-sub .mono { color: var(--ink-soft); }
+
+  .head-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 15px;
+    border-radius: 9px;
+    font-weight: 500; font-size: 13px;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.18s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn svg { width: 14px; height: 14px; stroke: currentColor; }
+  .btn-ghost { background: var(--card); border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--line-strong); }
+  .btn-primary { background: var(--ink); color: #fff; }
+  .btn-primary:hover { background: #2A241D; }
+  .btn-danger { background: var(--card); color: var(--red); border-color: var(--line); }
+  .btn-danger:hover { background: var(--red-soft); border-color: #F5D8D2; }
+
+  /* ─── GRID ─── */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+  }
+
+  .col-main { display: flex; flex-direction: column; gap: 16px; }
+  .col-side {
+    display: flex; flex-direction: column; gap: 16px;
+    position: sticky;
+    top: 88px;
+    align-self: start;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 16px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .card-title em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--amber);
+    margin-left: 2px;
+  }
+  .card-sub {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .card-step {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg-deep);
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    height: fit-content;
+  }
+
+  /* ─── FORM FIELDS ─── */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .label {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12.5px; font-weight: 500;
+    color: var(--ink-soft);
+    margin-bottom: 7px;
+  }
+  .label .req { color: var(--red); margin-left: 2px; }
+  .label .hint { color: var(--muted); font-weight: 400; font-size: 11.5px; }
+
+  .input, .textarea, .select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: #FDFAF5;
+    font-size: 13.5px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .input::placeholder, .textarea::placeholder { color: #B0A595; }
+  .input:hover, .textarea:hover, .select:hover { border-color: var(--line-strong); }
+  .input:focus, .textarea:focus, .select:focus {
+    border-color: var(--ink);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(26,20,16,0.06);
+  }
+  .textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+
+  .select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A7E72' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .input-with-icon {
+    position: relative;
+  }
+  .input-with-icon svg.icon {
+    position: absolute;
+    left: 13px; top: 50%;
+    transform: translateY(-50%);
+    width: 15px; height: 15px;
+    stroke: var(--muted);
+    pointer-events: none;
+  }
+  .input-with-icon .input { padding-left: 36px; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ─── BANNER UPLOAD ─── */
+  .uploader {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #FDFAF5;
+  }
+  .uploader-preview {
+    aspect-ratio: 16/5;
+    background:
+      radial-gradient(circle at 80% 30%, rgba(255,255,255,0.18), transparent 50%),
+      linear-gradient(135deg, #2A241D 0%, #4A3A2A 35%, #8C5A2C 70%, #E89B3C 100%);
+    position: relative;
+    display: flex; align-items: flex-end;
+    padding: 16px;
+  }
+  .preview-tag {
+    position: relative;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  .preview-actions {
+    position: absolute;
+    top: 12px; right: 12px;
+    display: flex; gap: 6px;
+  }
+  .preview-actions button {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .preview-actions button:hover { background: rgba(0,0,0,0.65); }
+  .preview-actions svg { width: 14px; height: 14px; stroke: currentColor; }
+
+  /* ─── RICH TEXT EDITOR ─── */
+  .rte {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #FDFAF5;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .rte:focus-within {
+    border-color: var(--ink);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(26,20,16,0.06);
+  }
+  .rte-toolbar {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 1px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .rte-btn {
+    width: 28px; height: 28px;
+    border: 0; background: transparent;
+    color: var(--ink-soft);
+    border-radius: 6px;
+    display: grid; place-items: center;
+    cursor: pointer; font-size: 13px;
+  }
+  .rte-btn:hover { background: var(--bg-deep); color: var(--ink); }
+  .rte-btn.active { background: var(--ink); color: #fff; }
+  .rte-btn svg { width: 14px; height: 14px; stroke: currentColor; }
+  .rte-divider { width: 1px; height: 18px; background: var(--line-strong); margin: 0 4px; }
+  .rte-select {
+    border: 0; background: transparent;
+    font: inherit; font-size: 12.5px; padding: 4px 8px;
+    border-radius: 6px; cursor: pointer;
+    color: var(--ink-soft);
+  }
+  .rte-select:hover { background: var(--bg-deep); }
+  .rte-content {
+    min-height: 200px;
+    padding: 16px 20px;
+    outline: none;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .rte-content h2 { font-family: 'Instrument Serif', serif; font-size: 18px; margin: 12px 0 6px; font-weight: 400; }
+  .rte-content p { margin-bottom: 8px; }
+  .rte-content ul { margin-left: 22px; margin-bottom: 8px; }
+  .rte-content blockquote {
+    border-left: 3px solid var(--amber);
+    padding-left: 12px;
+    color: var(--ink-soft);
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 16px;
+    margin: 10px 0;
+  }
+
+  /* ─── DATETIME ─── */
+  .datetime-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+  .datetime-pair {
+    display: grid;
+    grid-template-columns: 1fr 110px;
+    gap: 8px;
+  }
+  .datetime-arrow {
+    color: var(--muted);
+    display: grid; place-items: center;
+  }
+  .datetime-arrow svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  .datetime-foot {
+    display: flex; justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .datetime-foot b { color: var(--ink-soft); font-weight: 600; }
+
+  /* ─── CAPACITY SLIDER ─── */
+  .cap-row {
+    display: grid;
+    grid-template-columns: 1fr 130px;
+    gap: 14px;
+    align-items: center;
+  }
+  .slider-box {
+    background: #FDFAF5;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .slider-track {
+    appearance: none; -webkit-appearance: none;
+    width: 100%; height: 6px;
+    border-radius: 6px;
+    background: linear-gradient(to right, var(--ink) 0%, var(--ink) var(--p, 30%), var(--line-strong) var(--p, 30%), var(--line-strong) 100%);
+    outline: none;
+  }
+  .slider-track::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%; background: #fff;
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .slider-track::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%; background: #fff;
+    border: 2px solid var(--ink);
+    cursor: pointer;
+  }
+  .slider-marks {
+    display: flex; justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+  }
+  .cap-input {
+    text-align: center;
+    font-family: 'Geist Mono', monospace;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* ─── TAGS ─── */
+  .tag-input {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #FDFAF5;
+    min-height: 42px;
+    align-items: center;
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-deep);
+    color: var(--ink);
+    font-size: 12px; font-weight: 500;
+    padding: 4px 6px 4px 10px;
+    border-radius: 999px;
+  }
+  .tag svg { width: 12px; height: 12px; stroke: currentColor; cursor: pointer; opacity: 0.6; }
+  .tag svg:hover { opacity: 1; }
+  .tag-input input {
+    border: 0; outline: 0; background: transparent;
+    font: inherit; flex: 1; min-width: 100px;
+    padding: 4px 6px; font-size: 13px;
+  }
+
+  /* ─── TOGGLES ─── */
+  .toggle-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .toggle-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .toggle-row:first-child { padding-top: 0; }
+  .toggle-info-title { font-weight: 500; font-size: 13.5px; color: var(--ink); }
+  .toggle-info-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .switch {
+    flex-shrink: 0;
+    position: relative;
+    width: 38px; height: 22px;
+    background: var(--line-strong);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .switch::after {
+    content: '';
+    position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    border-radius: 50%; background: #fff;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .switch.on { background: var(--ink); }
+  .switch.on::after { transform: translateX(16px); }
+
+  /* ─── SIDE PANEL: PREVIEW ─── */
+  .preview-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .preview-head {
+    padding: 14px 16px 4px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .preview-head-title {
+    font-size: 13px; font-weight: 600; color: var(--ink-soft);
+  }
+  .preview-head-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .preview-head-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .preview-banner {
+    aspect-ratio: 16/9;
+    margin: 12px 14px 0;
+    border-radius: 10px;
+    background:
+      radial-gradient(circle at 75% 25%, rgba(255,255,255,0.20), transparent 55%),
+      linear-gradient(135deg, #2A241D 0%, #4A3A2A 40%, #8C5A2C 75%, #E89B3C 100%);
+    position: relative;
+    display: flex; align-items: flex-end;
+    padding: 12px;
+  }
+  .preview-pill {
+    background: rgba(255,255,255,0.92);
+    color: var(--ink);
+    font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px;
+  }
+  .preview-body { padding: 12px 16px 16px; }
+  .preview-event-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .preview-meta {
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .preview-meta div { display: flex; align-items: center; gap: 7px; }
+  .preview-meta svg { width: 13px; height: 13px; stroke: var(--muted); }
+  .preview-cta {
+    display: block;
+    margin-top: 14px;
+    padding: 9px;
+    text-align: center;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+
+  /* ─── CHECKLIST ─── */
+  .checklist-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .checklist-head {
+    margin-bottom: 4px;
+  }
+  .checklist-head-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .checklist-head-title em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--amber);
+    margin-left: 2px;
+  }
+
+  .checklist {
+    margin-top: 12px;
+  }
+  .check-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12.5px;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .check-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .check-tick {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--bg-deep);
+    color: var(--muted);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 1px;
+  }
+  .check-tick.done {
+    background: var(--green);
+    color: #fff;
+  }
+  .check-tick svg { width: 11px; height: 11px; stroke: currentColor; }
+  .check-text {
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .check-text small {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* ─── TIP CARD ─── */
+  .tip-card {
+    background: linear-gradient(160deg, #FBF4E7 0%, #F5E5C7 100%);
+    border: 1px solid #ECD9B0;
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .tip-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #6B4A1B;
+    margin-bottom: 8px;
+  }
+  .tip-tag::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--amber);
+  }
+  .tip-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 17px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    color: #3A2A14;
+  }
+  .tip-title em { font-style: italic; }
+  .tip-title b { font-style: normal; font-weight: 600; }
+  .tip-body {
+    font-size: 12px;
+    color: #6B4A1B;
+    line-height: 1.55;
+  }
+
+  /* ─── STICKY ACTION BAR ─── */
+  .actionbar {
+    position: fixed;
+    left: 232px; right: 0; bottom: 0;
+    background: rgba(241,236,227,0.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 12px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 15;
+  }
+  .actionbar-info {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .save-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    color: var(--green);
+  }
+  .save-status::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  .actionbar-info .sep {
+    opacity: 0.5;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: 1fr; }
+    .col-side { position: static; }
+  }
+  @media (max-width: 780px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .topbar { padding: 14px 20px; }
+    .page { padding: 20px; }
+    .actionbar { left: 0; padding: 12px 20px; }
+    .row, .row-3, .datetime-row { grid-template-columns: 1fr; }
+    .head-actions { flex-wrap: wrap; }
+    .search-box { width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="3"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">EventHub</div>
+        <div class="brand-sub">Admin Panel</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Tổng quan</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+
+    <div class="nav-group-label">Quản lý</div>
+    <a class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Quản lý Sự kiện
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Xét duyệt đăng ký
+      <span class="nav-badge">10</span>
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
+      Điểm danh
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Quản lý Người dùng
+    </a>
+
+    <div class="nav-group-label">Hệ thống</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Cài đặt
+    </a>
+
+    <div class="nav-spacer"></div>
+    <div class="logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Đăng xuất
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main">
+
+    <!-- topbar -->
+    <header class="topbar">
+      <div class="breadcrumb">
+        <a>Admin</a>
+        <span class="sep">›</span>
+        <a>Quản lý Sự kiện</a>
+        <span class="sep">›</span>
+        <span class="current">Tạo sự kiện mới</span>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Tìm kiếm sự kiện, người dùng..." />
+        </div>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="page">
+
+      <!-- page head -->
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Tạo <em>sự kiện</em> mới</h1>
+          <div class="page-sub">
+            Hoàn thành các thông tin bên dưới để công bố sự kiện. Bản nháp được lưu tự động <span class="mono">(09:42 SA)</span>.
+          </div>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            Hủy
+          </button>
+          <button class="btn btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Xem trước
+          </button>
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+            Đăng sự kiện
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ GRID ═══ -->
+      <div class="grid">
+
+        <!-- ── LEFT (form) ── -->
+        <div class="col-main">
+
+          <!-- 01 Banner -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Hình ảnh <em>banner</em></div>
+                <div class="card-sub">Khuyến nghị tỉ lệ 16:9, tối thiểu 1280×720, dung lượng dưới 5MB.</div>
+              </div>
+              <div class="card-step">01 / 05</div>
+            </div>
+
+            <div class="uploader">
+              <div class="uploader-preview">
+                <span class="preview-tag">banner-event-2025.jpg • 1920×1080</span>
+                <div class="preview-actions">
+                  <button title="Đổi ảnh">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                  </button>
+                  <button title="Xóa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 02 Basic Info -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Thông tin <em>cơ bản</em></div>
+                <div class="card-sub">Tiêu đề rõ ràng và mô tả hấp dẫn sẽ giúp tăng lượt đăng ký.</div>
+              </div>
+              <div class="card-step">02 / 05</div>
+            </div>
+
+            <div class="field">
+              <label class="label">
+                Tên sự kiện <span class="req">*</span>
+                <span class="hint" id="titleHint">42 / 120</span>
+              </label>
+              <input class="input" id="titleInput" maxlength="120"
+                     placeholder="Ví dụ: Hội thảo Chuyển đổi số 2025"
+                     value="Hội thảo Chuyển đổi số trong Doanh nghiệp 2025" />
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label class="label">Chủ đề <span class="req">*</span></label>
+                <select class="select">
+                  <option>Hội thảo / Workshop</option>
+                  <option selected>Hội nghị / Conference</option>
+                  <option>Đào tạo nội bộ</option>
+                  <option>Team Building</option>
+                  <option>Lễ kỷ niệm</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label">Hình thức tổ chức</label>
+                <select class="select">
+                  <option selected>Trực tiếp (Offline)</option>
+                  <option>Trực tuyến (Online)</option>
+                  <option>Kết hợp (Hybrid)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field" style="margin-bottom:0;">
+              <label class="label">
+                Mô tả ngắn
+                <span class="hint">Hiển thị trên thẻ sự kiện ở trang chủ</span>
+              </label>
+              <textarea class="textarea" placeholder="Tóm tắt nội dung sự kiện trong 2–3 câu...">Cùng các chuyên gia hàng đầu thảo luận về chiến lược chuyển đổi số, công nghệ AI và cơ hội mới cho doanh nghiệp Việt Nam trong năm 2025.</textarea>
+            </div>
+          </div>
+
+          <!-- 03 Description -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Mô tả <em>chi tiết</em></div>
+                <div class="card-sub">Trình bày timeline, nội dung chính, diễn giả và thông tin liên quan.</div>
+              </div>
+              <div class="card-step">03 / 05</div>
+            </div>
+
+            <div class="rte">
+              <div class="rte-toolbar">
+                <select class="rte-select">
+                  <option>Đoạn văn</option>
+                  <option>Tiêu đề 1</option>
+                  <option>Tiêu đề 2</option>
+                  <option>Trích dẫn</option>
+                </select>
+                <span class="rte-divider"></span>
+                <button class="rte-btn" title="Đậm" data-cmd="bold"><b>B</b></button>
+                <button class="rte-btn" title="Nghiêng" data-cmd="italic"><i>I</i></button>
+                <button class="rte-btn" title="Gạch chân" data-cmd="underline"><u>U</u></button>
+                <button class="rte-btn" title="Gạch ngang" data-cmd="strikeThrough"><s>S</s></button>
+                <span class="rte-divider"></span>
+                <button class="rte-btn" title="Danh sách">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+                <button class="rte-btn" title="Danh sách số">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+                </button>
+                <button class="rte-btn" title="Trích dẫn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+                </button>
+                <span class="rte-divider"></span>
+                <button class="rte-btn" title="Liên kết">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                </button>
+                <button class="rte-btn" title="Hình ảnh">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                </button>
+                <button class="rte-btn" title="Bảng">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                </button>
+                <span class="rte-divider"></span>
+                <button class="rte-btn" title="Căn trái">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                </button>
+                <button class="rte-btn" title="Căn giữa">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+                </button>
+                <button class="rte-btn" title="Căn phải">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+                </button>
+                <span style="flex:1"></span>
+                <button class="rte-btn" title="Toàn màn hình">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+              </div>
+              <div class="rte-content" contenteditable="true">
+                <h2>Về sự kiện</h2>
+                <p>Hội thảo <b>Chuyển đổi số 2025</b> mang đến cái nhìn tổng quan về làn sóng công nghệ đang định hình lại các ngành công nghiệp tại Việt Nam — từ AI tạo sinh đến tự động hóa quy trình và dữ liệu.</p>
+                <h2>Nội dung chính</h2>
+                <ul>
+                  <li>Phiên 1 — Tổng quan thị trường &amp; xu hướng 2025</li>
+                  <li>Phiên 2 — Triển khai AI trong doanh nghiệp vừa và nhỏ</li>
+                  <li>Phiên 3 — Networking &amp; Q&amp;A với diễn giả</li>
+                </ul>
+                <blockquote>"Doanh nghiệp không chuyển đổi số sẽ tụt lại — nhưng chuyển đổi sai cách còn tốn kém hơn."</blockquote>
+              </div>
+            </div>
+          </div>
+
+          <!-- 04 Time & Location -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Thời gian &amp; <em>địa điểm</em></div>
+                <div class="card-sub">Múi giờ mặc định: GMT+7 (Hà Nội).</div>
+              </div>
+              <div class="card-step">04 / 05</div>
+            </div>
+
+            <div class="field">
+              <label class="label">Thời gian diễn ra <span class="req">*</span></label>
+              <div class="datetime-row">
+                <div class="datetime-pair">
+                  <div class="input-with-icon">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <input class="input" type="date" value="2025-04-22" />
+                  </div>
+                  <div class="input-with-icon">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                    <input class="input" type="time" value="08:30" />
+                  </div>
+                </div>
+                <div class="datetime-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+                </div>
+                <div class="datetime-pair">
+                  <div class="input-with-icon">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <input class="input" type="date" value="2025-04-22" />
+                  </div>
+                  <div class="input-with-icon">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                    <input class="input" type="time" value="17:00" />
+                  </div>
+                </div>
+              </div>
+              <div class="datetime-foot">
+                <span>BẮT ĐẦU → KẾT THÚC</span>
+                <span>Thời lượng: <b>8 giờ 30 phút</b></span>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label class="label">Địa điểm <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <input class="input" value="Trung tâm Hội nghị Quốc gia" />
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Phòng / Tầng</label>
+                <input class="input" value="Hội trường A — Tầng 2" />
+              </div>
+            </div>
+
+            <div class="field" style="margin-bottom:0;">
+              <label class="label">Địa chỉ chi tiết</label>
+              <input class="input" value="57 Phạm Hùng, Mễ Trì, Nam Từ Liêm, Hà Nội" />
+            </div>
+          </div>
+
+          <!-- 05 Capacity -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Đăng ký &amp; <em>giới hạn</em></div>
+                <div class="card-sub">Cài đặt số lượng người tham gia và phương thức xét duyệt.</div>
+              </div>
+              <div class="card-step">05 / 05</div>
+            </div>
+
+            <div class="field">
+              <label class="label">
+                Giới hạn số người tham gia <span class="req">*</span>
+                <span class="hint" id="capValueLabel">200 người</span>
+              </label>
+              <div class="cap-row">
+                <div class="slider-box">
+                  <input id="capSlider" class="slider-track" type="range" min="10" max="1000" step="10" value="200" />
+                  <div class="slider-marks">
+                    <span>10</span><span>250</span><span>500</span><span>750</span><span>1000</span>
+                  </div>
+                </div>
+                <input class="input cap-input" id="capInput" type="number" value="200" min="10" max="1000" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label class="label">Hạn chót đăng ký</label>
+                <div class="input-with-icon">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="14" x2="15" y2="20"/><line x1="15" y1="14" x2="9" y2="20"/></svg>
+                  <input class="input" type="date" value="2025-04-20" />
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Phòng ban được phép</label>
+                <select class="select">
+                  <option selected>Toàn công ty</option>
+                  <option>Chỉ phòng IT</option>
+                  <option>IT &amp; Marketing</option>
+                  <option>Tùy chọn nhiều phòng…</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">Thẻ sự kiện</label>
+              <div class="tag-input">
+                <span class="tag">Chuyển đổi số <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+                <span class="tag">AI <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+                <span class="tag">2025 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+                <span class="tag">Hội thảo <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+                <input placeholder="Thêm thẻ và nhấn Enter…" />
+              </div>
+            </div>
+
+            <div class="field" style="margin-bottom:0;">
+              <label class="label">Tùy chọn nâng cao</label>
+              <div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-info-title">Yêu cầu Admin xét duyệt</div>
+                    <div class="toggle-info-sub">Người dùng cần được phê duyệt sau khi đăng ký.</div>
+                  </div>
+                  <div class="switch on" data-toggle></div>
+                </div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-info-title">Cho phép danh sách chờ (waitlist)</div>
+                    <div class="toggle-info-sub">Khi đủ số lượng, người đăng ký sau sẽ vào hàng chờ.</div>
+                  </div>
+                  <div class="switch on" data-toggle></div>
+                </div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-info-title">Gửi email nhắc lịch tự động</div>
+                    <div class="toggle-info-sub">Trước sự kiện 24 giờ và 1 giờ.</div>
+                  </div>
+                  <div class="switch" data-toggle></div>
+                </div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-info-title">Hiển thị công khai trên Trang chủ</div>
+                    <div class="toggle-info-sub">Tắt nếu đây là sự kiện nội bộ riêng tư.</div>
+                  </div>
+                  <div class="switch on" data-toggle></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT (preview + checklist + tip) ── -->
+        <aside class="col-side">
+
+          <!-- preview card -->
+          <div class="preview-card">
+            <div class="preview-head">
+              <div class="preview-head-title">Xem trước thẻ</div>
+              <span class="preview-head-tag">LIVE</span>
+            </div>
+            <div class="preview-banner">
+              <span class="preview-pill">Hội nghị</span>
+            </div>
+            <div class="preview-body">
+              <div class="preview-event-title" id="previewTitle">Hội thảo Chuyển đổi số trong Doanh nghiệp 2025</div>
+              <div class="preview-meta">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Thứ Ba, 22 / 04 / 2025
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                  08:30 – 17:00 (GMT+7)
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Hội trường A, TT Hội nghị Quốc gia
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  Tối đa <b id="previewCap" style="color:var(--ink);font-weight:600;">200</b> người
+                </div>
+              </div>
+              <div class="preview-cta">Đăng ký tham gia</div>
+            </div>
+          </div>
+
+          <!-- checklist -->
+          <div class="checklist-card">
+            <div class="checklist-head">
+              <div class="checklist-head-title">Tiến độ <em>hoàn thành</em></div>
+            </div>
+            <div class="checklist">
+              <div class="check-row">
+                <div class="check-tick done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+                </div>
+                <div class="check-text">
+                  Đã thêm banner sự kiện
+                  <small>1920×1080 — đạt chuẩn</small>
+                </div>
+              </div>
+              <div class="check-row">
+                <div class="check-tick done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+                </div>
+                <div class="check-text">
+                  Tên sự kiện rõ ràng
+                  <small>42 ký tự — vừa đủ</small>
+                </div>
+              </div>
+              <div class="check-row">
+                <div class="check-tick done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+                </div>
+                <div class="check-text">
+                  Mô tả chi tiết
+                  <small>3 mục, 1 trích dẫn</small>
+                </div>
+              </div>
+              <div class="check-row">
+                <div class="check-tick done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+                </div>
+                <div class="check-text">
+                  Thời gian &amp; địa điểm
+                  <small>22/04/2025 • Hà Nội</small>
+                </div>
+              </div>
+              <div class="check-row">
+                <div class="check-tick">5</div>
+                <div class="check-text">
+                  Thêm diễn giả &amp; chương trình
+                  <small>Khuyến nghị — chưa hoàn thành</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- tip -->
+          <div class="tip-card">
+            <div class="tip-tag">MẸO TỪ EVENTHUB</div>
+            <div class="tip-title">Sự kiện có <em>banner</em> tăng <b>3.2×</b> lượt đăng ký.</div>
+            <div class="tip-body">
+              Sử dụng banner sắc nét, có thông điệp rõ ràng và thời gian sự kiện ngay trên ảnh. Tránh dùng quá 2 phông chữ trong cùng một banner.
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+
+    </section>
+
+    <!-- ═══ STICKY ACTION BAR ═══ -->
+    <div class="actionbar">
+      <div class="actionbar-info">
+        <span class="save-status">Đã lưu nháp lúc 09:42 SA</span>
+        <span class="sep">•</span>
+        <span>Tự động lưu mỗi 30 giây</span>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+          Lưu nháp
+        </button>
+        <button class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Xem trước
+        </button>
+        <button class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+          Đăng sự kiện
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // toggles
+  document.querySelectorAll('[data-toggle]').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('on'));
+  });
+
+  // RTE buttons
+  document.querySelectorAll('.rte-btn[data-cmd]').forEach(btn => {
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      document.execCommand(btn.dataset.cmd, false, null);
+      btn.classList.toggle('active');
+    });
+  });
+
+  // title char counter + live preview
+  const titleInput = document.getElementById('titleInput');
+  const titleHint  = document.getElementById('titleHint');
+  const previewTitle = document.getElementById('previewTitle');
+  titleInput.addEventListener('input', () => {
+    titleHint.textContent = `${titleInput.value.length} / 120`;
+    previewTitle.textContent = titleInput.value || 'Tên sự kiện…';
+  });
+
+  // capacity slider
+  const capSlider = document.getElementById('capSlider');
+  const capInput  = document.getElementById('capInput');
+  const capValueLabel = document.getElementById('capValueLabel');
+  const previewCap = document.getElementById('previewCap');
+  function updateCap(v) {
+    v = Math.max(10, Math.min(1000, parseInt(v) || 10));
+    capSlider.value = v;
+    capInput.value = v;
+    const p = ((v - 10) / (1000 - 10)) * 100;
+    capSlider.style.setProperty('--p', p + '%');
+    capValueLabel.textContent = v.toLocaleString('vi-VN') + ' người';
+    previewCap.textContent = v.toLocaleString('vi-VN');
+  }
+  capSlider.addEventListener('input', e => updateCap(e.target.value));
+  capInput.addEventListener('input', e => updateCap(e.target.value));
+  updateCap(200);
+</script>
+</body>
+</html>
