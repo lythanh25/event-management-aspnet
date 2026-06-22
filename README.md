@@ -24,6 +24,9 @@ Internal system for managing company events
 <img width="1896" height="862" alt="image" src="https://github.com/user-attachments/assets/1b419f9f-9f36-4ac8-b8ec-b732bd70465d" />
 <br />
 <img width="1898" height="856" alt="image" src="https://github.com/user-attachments/assets/adac5169-3348-4d49-bde1-76b90f60ee63" />
+<br />
+<img width="1896" height="858" alt="image" src="https://github.com/user-attachments/assets/399ec314-8767-45c1-8ce6-4265324b4a3a" />
+
 
 
 
